@@ -1,14 +1,41 @@
+# UE4 Telemetry Visualizer
+![View Telemetry](docs/images/points.png)
 
-# Contributing
+This is a plugin for adding telemetry to your UE4 game and visualizing that telemetry in the UE4 editor. It is featured in the [Azure Gaming Reference Architectures](https://docs.microsoft.com/en-us/gaming/azure/reference-architectures/analytics-in-editor-debugging).  
 
-This project welcomes contributions and suggestions.  Most contributions require you to agree to a
-Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us
-the rights to use your contribution. For details, visit https://cla.microsoft.com.
+## Summary
+Game telemetry itself is nothing new, but the number of "out of the box" solutions for games to leverage while ___in development___ are next to none.  Historically, developers would use log files to debug issues, which worked fine for local debugging. Today's games more closely resemble distributed systems, interacting with other clients, servers, and various cloud services regularly.
 
-When you submit a pull request, a CLA-bot will automatically determine whether you need to provide
-a CLA and decorate the PR appropriately (e.g., label, comment). Simply follow the instructions
-provided by the bot. You will only need to do this once across all repos using our CLA.
+This project was inspired by developers needing to answer questions for which their own development systems could not provide all the answers, and who were tired of asking people to email them log files!
 
-This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
-For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or
-contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
+## Goals
+* Make it as simple as possible for __anyone__ on a development team to add and view telemetry - No dedicated engineers required!
+* Iterative development model - You won't know what you'll need up front, so make it as easy as possible to add things along the way!
+* Low cost of operation
+
+## Features
+* Telemetry generation API and asynchronous upload with configurable buffers and send intervals,
+  * Optimized for a large volume of telemetry (10's to 100's per second) from a small number of clients (10-30)
+  * Batching and compression out of the box, common fields denormalized server side to reduce bandwidth requirements
+* Simple UI to build queries in editor, wraps a JSON defined query language usable by external tools
+  * Customizable colors and shapes, as well as heatmaps
+
+## Example use cases for telemetry during development
+### Programmers
+* Code Correctness: Asserts, non-critical errors, unlikely code paths taken
+* Profiling: Tracking system counters over thresholds (RAM, CPU, frame render time)
+
+### Artists and Game Designers
+* Game asset tracking (missing assets, over-budget assets, hitches)
+* Playtesting analytics in realtime (focus groups, friends and family alpha builds)
+* Game mechanics validation (AI, balancing) 
+
+### Testing and Quality
+* Testing test coverage per build
+* Bug correlation, reproduction, regression
+
+
+## Setup Instructions
+This plugin requires a server component to send telemetry to, which can be found here: https://github.com/Azure-Samples/gaming-in-editor-telemetry.
+
+Plugin setup instructions can be found [here](docs/UE4_Instructions.md).
