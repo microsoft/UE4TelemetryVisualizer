@@ -39,3 +39,8 @@ This project was inspired by developers needing to answer questions for which th
 This plugin requires a server component to send telemetry to, which can be found here: https://github.com/Azure-Samples/gaming-in-editor-telemetry.
 
 Plugin setup instructions can be found [here](docs/UE4_Instructions.md).
+
+If you find issues, please add them to the [issue tracker](https://github.com/Microsoft/UE4TelemetryVisualizer/issues). 
+
+## Contributing
+We welcome contributions to this project.  Please read the [contributing](/CONTRIBUTING.md) information before submitting a pull request. If you need inspiration, please check the [issue tracker](https://github.com/Microsoft/UE4TelemetryVisualizer/issues). We are using the [GitHub Flow](https://guides.github.com/introduction/flow/) development model.
