@@ -1,0 +1,28 @@
+{
+	"FileVersion" : 3,
+	"Version" : 1,
+	"VersionName" : "1.0",
+	"FriendlyName" : "Game Development Telemetry",
+	"Description" : "Game Development Telemetry",
+	"Category" : "Analytics",
+	"CreatedBy" : "ATG - Microsoft Corporation",
+	"CreatedByURL" : "http://microsoft.com",
+	"MarketplaceURL" : "",
+	"SupportURL" : "",
+	"EnabledByDefault" : false,
+	"CanContainContent" : true,
+	"IsBetaVersion" : false,
+	"Installed" : false,
+	"Modules": [
+		{
+			"Name": "GameTelemetryVisualizer",
+			"Type": "Editor",
+			"LoadingPhase": "Default"
+		},
+		{
+			"Name": "GameTelemetry",
+			"Type": "Runtime",
+			"LoadingPhase": "PreDefault"
+		}
+	]
+}
