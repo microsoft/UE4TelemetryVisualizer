@@ -43,4 +43,6 @@ Plugin setup instructions can be found [here](docs/UE4_Instructions.md).
 If you find issues, please add them to the [issue tracker](https://github.com/Microsoft/UE4TelemetryVisualizer/issues). 
 
 ## Contributing
-We welcome contributions to this project.  Please read the [contributing](/CONTRIBUTING.md) information before submitting a pull request. If you need inspiration, please check the [issue tracker](https://github.com/Microsoft/UE4TelemetryVisualizer/issues). We are using the [GitHub Flow](https://guides.github.com/introduction/flow/) development model.
+[Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct)
+
+We welcome contributions to this project.  This project  Please read the [contributing](/CONTRIBUTING.md) information before submitting a pull request. If you need inspiration, please check the [issue tracker](https://github.com/Microsoft/UE4TelemetryVisualizer/issues). We are using the [GitHub Flow](https://guides.github.com/introduction/flow/) development model.
