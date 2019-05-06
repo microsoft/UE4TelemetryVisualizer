@@ -999,7 +999,11 @@ FReply FTelemetryVisualizerUI::GenerateHeatmap(SEventEditorContainer* collection
 							}
 						}
 
-						largestValue = FMath::Max(largestValue, values[i]);
+						if (numValues[i] > 0)
+						{
+							largestValue = FMath::Max(largestValue, values[i] / numValues[i]);
+						}
+
 						largestNumValue = FMath::Max(largestNumValue, numValues[i]);
 						orientation[i] = orientation[i] / numValues[i];
 					}
@@ -1017,7 +1021,11 @@ FReply FTelemetryVisualizerUI::GenerateHeatmap(SEventEditorContainer* collection
 							}
 						}
 
-						largestValue = FMath::Max(largestValue, values[i]);
+						if (numValues[i] > 0)
+						{
+							largestValue = FMath::Max(largestValue, values[i] / numValues[i]);
+						}
+
 						largestNumValue = FMath::Max(largestNumValue, numValues[i]);
 					}
 				}
@@ -1091,10 +1099,10 @@ FReply FTelemetryVisualizerUI::GenerateHeatmap(SEventEditorContainer* collection
 				{
 					if (values[i] > 0)
 					{
-						tempValue = ((float)values[i] / numValues[i]) / m_heatmapMaxValue;
+						tempValue = (float)values[i] / numValues[i];
 						tempColorValue = (((float)values[i] / numValues[i]) - m_heatmapMinValue) / (m_heatmapMaxValue - m_heatmapMinValue);
 						tempColorValue = FMath::Max(tempColorValue, 0.f);
-						tempColorValue = FMath::Min(tempColorValue, (float)m_heatmapMaxValue);
+						tempColorValue = FMath::Min(tempColorValue, 1.f);
 
 						tempActor->AddEvent(parts[i].GetCenter(), orientation[i], m_heatmapColor.GetColorFromRange(tempColorValue), m_heatmapShapeType, scaledHeatmapSize, tempValue);
 					}
@@ -1109,7 +1117,7 @@ FReply FTelemetryVisualizerUI::GenerateHeatmap(SEventEditorContainer* collection
 						tempValue = (float)numValues[i] / m_heatmapMaxValue;
 						tempColorValue = (float)(numValues[i] - m_heatmapMinValue) / (m_heatmapMaxValue - m_heatmapMinValue);
 						tempColorValue = FMath::Max(tempColorValue, 0.f);
-						tempColorValue = FMath::Min(tempColorValue, (float)m_heatmapMaxValue);
+						tempColorValue = FMath::Min(tempColorValue, 1.f);
 
 						tempActor->AddEvent(parts[i].GetCenter(), orientation[i], m_heatmapColor.GetColorFromRange(tempColorValue), m_heatmapShapeType, scaledHeatmapSize, tempValue);
 					}
@@ -1123,10 +1131,10 @@ FReply FTelemetryVisualizerUI::GenerateHeatmap(SEventEditorContainer* collection
 				{
 					if (values[i] > 0)
 					{
-						tempValue = ((float)values[i] / numValues[i]) / m_heatmapMaxValue;
+						tempValue = (float)values[i] / numValues[i];
 						tempColorValue = (((float)values[i] / numValues[i]) - m_heatmapMinValue) / (m_heatmapMaxValue - m_heatmapMinValue);
 						tempColorValue = FMath::Max(tempColorValue, 0.f);
-						tempColorValue = FMath::Min(tempColorValue, (float)m_heatmapMaxValue);
+						tempColorValue = FMath::Min(tempColorValue, 1.f);
 						tempHeight = (((float)values[i] / numValues[i]) / m_heatmapMaxValue) * scaledHeatmapSize;
 
 						tempActor->AddEvent(parts[i].GetCenter(), FVector::ZeroVector, m_heatmapColor.GetColorFromRange(tempColorValue), EventType::Cube,
@@ -1145,7 +1153,7 @@ FReply FTelemetryVisualizerUI::GenerateHeatmap(SEventEditorContainer* collection
 						tempValue = (float)numValues[i] / m_heatmapMaxValue;
 						tempColorValue = (float)(numValues[i] - m_heatmapMinValue) / (m_heatmapMaxValue - m_heatmapMinValue);
 						tempColorValue = FMath::Max(tempColorValue, 0.f);
-						tempColorValue = FMath::Min(tempColorValue, (float)m_heatmapMaxValue);
+						tempColorValue = FMath::Min(tempColorValue, 1.f);
 						tempHeight = ((float)numValues[i] / m_heatmapMaxValue) * scaledHeatmapSize;
 
 						tempActor->AddEvent(parts[i].GetCenter(), FVector::ZeroVector, m_heatmapColor.GetColorFromRange(tempColorValue), EventType::Cube,
