@@ -347,10 +347,10 @@ static enum AnimationState
 
 struct ColorRange
 {
-	uint8 A;
-	uint8 B;
-	uint8 G;
-	uint8 R;
+	int16 R;
+	int16 G;
+	int16 B;
+	int16 A;
 };
 
 //Wraps colors and brushes for heatmap settings
@@ -417,10 +417,10 @@ public:
 	{
 		FColor retColor = lowColor;
 
-		retColor.A += (uint8)(range.A * location);
-		retColor.R += (uint8)(range.R * location);
-		retColor.G += (uint8)(range.G * location);
-		retColor.B += (uint8)(range.B * location);
+		retColor.A += (int16)(range.A * location);
+		retColor.R += (int16)(range.R * location);
+		retColor.G += (int16)(range.G * location);
+		retColor.B += (int16)(range.B * location);
 
 		return retColor;
 	}

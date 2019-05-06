@@ -85,6 +85,7 @@ public:
 	}
 
 	// Singleton reference
+	// Ensure Initialize is called before this is used
 	static FTelemetryManager &Get() { check(Instance.IsValid()) return *Instance; }
 
 	// Get the currently set client id
