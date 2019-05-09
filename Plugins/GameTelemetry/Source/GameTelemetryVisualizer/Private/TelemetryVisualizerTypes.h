@@ -43,23 +43,11 @@ struct STelemetryEvent
 	FVector point;
 	FVector orientation;
 	FDateTime time;
-	float value;
-	bool isPct;
+	TMap<FString, TSharedPtr<FJsonValue>> values;
 
-	STelemetryEvent() : name(TEXT("\0")), category(TEXT("\0")), session(TEXT("\0")), user(TEXT("\0")), build(TEXT("\0")), point(FVector::ZeroVector), orientation(FVector::ZeroVector), time(0), value(0.f),isPct(false) {};
-	STelemetryEvent(FString inName, FString inCategory, FString inSession, FString inBuild, FString inUser, FVector point, FDateTime time, float value, bool isPct)
-		: point(point), time(time), value(value), isPct(isPct)
-	{
-		orientation = FVector::ZeroVector;
-		SetName(inName);
-		SetCategory(inCategory);
-		SetSession(inSession);
-		SetBuild(inBuild);
-		SetUser(inUser);
-	};
-
-	STelemetryEvent(FString inName, FString inCategory, FString inSession, FString inBuild, FString inUser, FVector point, FVector orientation, FDateTime time, float value, bool isPct)
-		: point(point), orientation(orientation), time(time), value(value), isPct(isPct)
+	STelemetryEvent() : name(TEXT("\0")), category(TEXT("\0")), session(TEXT("\0")), user(TEXT("\0")), build(TEXT("\0")), point(FVector::ZeroVector), orientation(FVector::ZeroVector), time(0) {};
+	STelemetryEvent(FString inName, FString inCategory, FString inSession, FString inBuild, FString inUser, FVector point, FVector orientation, FDateTime time)
+		: point(point), orientation(orientation), time(time)
 	{
 		SetName(inName);
 		SetCategory(inCategory);
@@ -133,9 +121,16 @@ struct STelemetryEvent
 		return FString(session);
 	}
 
-	bool IsPercentage()
+	double GetValue(FString name)
 	{
-		return isPct;
+		double value = 0;
+
+		if (values.Contains(name))
+		{
+			values[name]->TryGetNumber(value);
+		}
+
+		return value;
 	}
 };
 
@@ -147,7 +142,6 @@ private:
 	FSlateBrush colorBrush;
 	bool shouldDraw;
 	bool shouldAnimate;
-	bool isPct;
 	FDateTime timeStart;
 	FDateTime timeEnd;
 	EventType type;
@@ -156,12 +150,13 @@ public:
 	FString name;
 	FString session;
 	TArray<TSharedPtr<STelemetryEvent>> events;
+	TArray<FString> attributeNames;
 
-	SEventEditorContainer() : shouldDraw(DefaultDrawSetting), shouldAnimate(false), isPct(false), color(FColor::Red), colorBrush((FSlateBrush)FSlateColorBrush(FColor::Red)), type(EventType::Sphere)
+	SEventEditorContainer() : shouldDraw(DefaultDrawSetting), shouldAnimate(false), color(FColor::Red), colorBrush((FSlateBrush)FSlateColorBrush(FColor::Red)), type(EventType::Sphere)
 	{
 	}
 
-	SEventEditorContainer(FString name, int index) : name(name), shouldDraw(DefaultDrawSetting), shouldAnimate(false), isPct(false), color(FColor::Red), colorBrush((FSlateBrush)FSlateColorBrush(FColor::Red)), type(EventType::Sphere)
+	SEventEditorContainer(FString name, int index) : name(name), shouldDraw(DefaultDrawSetting), shouldAnimate(false), color(FColor::Red), colorBrush((FSlateBrush)FSlateColorBrush(FColor::Red)), type(EventType::Sphere)
 	{
 		color = DefaultColors[index % DefaultColors.Num()];
 		colorBrush = (FSlateBrush)FSlateColorBrush(color);
@@ -173,25 +168,13 @@ public:
 		{
 			Fill(iEvents);
 			name = iEvents[0].GetName();
-			isPct = events[0]->IsPercentage();
 			SetupTimes();
 		}
 	}
 
 	void AddEvent(FSimpleEvent newEvent)
 	{
-		FString valueName;
-		double value = 0.f;
-		bool isPct = false;
-
-		//Check for a specified value the event wants to draw
-		if (newEvent.GetString(L"disp_val", valueName))
-		{
-			value = newEvent.GetNumber(valueName);
-			isPct = valueName.StartsWith("pct_");
-		}
-
-		events.Emplace(MakeShareable(new STelemetryEvent(
+		int index = events.Emplace(MakeShareable(new STelemetryEvent(
 			newEvent.GetName(),
 			newEvent.GetCategory(),
 			newEvent.GetSessionId(),
@@ -199,10 +182,15 @@ public:
 			newEvent.GetUserId(),
 			newEvent.GetPlayerPosition(),
 			newEvent.GetPlayerDirection(),
-			newEvent.GetTime(),
-			(float)value,
-			isPct)));
+			newEvent.GetTime())));
 		SetupTimes();
+
+		newEvent.GetAttributes(events[index]->values);
+
+		for (auto& attr : events[index]->values)
+		{
+			attributeNames.AddUnique(attr.Key);
+		}
 	}
 
 	//Add an array of query results
@@ -322,11 +310,6 @@ public:
 
 		return range;
 	}
-
-	bool IsPercentage()
-	{
-		return isPct;
-	}
 };
 
 //Types of heatmaps offered
@@ -347,10 +330,10 @@ static enum AnimationState
 
 struct ColorRange
 {
-	uint8 A;
-	uint8 B;
-	uint8 G;
-	uint8 R;
+	int16 R;
+	int16 G;
+	int16 B;
+	int16 A;
 };
 
 //Wraps colors and brushes for heatmap settings
@@ -417,13 +400,23 @@ public:
 	{
 		FColor retColor = lowColor;
 
-		retColor.A += (uint8)(range.A * location);
-		retColor.R += (uint8)(range.R * location);
-		retColor.G += (uint8)(range.G * location);
-		retColor.B += (uint8)(range.B * location);
+		retColor.A += (int16)(range.A * location);
+		retColor.R += (int16)(range.R * location);
+		retColor.G += (int16)(range.G * location);
+		retColor.B += (int16)(range.B * location);
 
 		return retColor;
 	}
+};
+
+//Nodes used when preparing a heatmap
+struct HeatmapNode
+{
+	int numValues;
+	int values;
+	FVector orientation;
+
+	HeatmapNode() : numValues(0), values(0), orientation(FVector::ZeroVector) {}
 };
 
 //Strings associated with different viz settings for UI

@@ -34,6 +34,8 @@ void FTelemetryVisualizerUI::Initialize()
 	m_anim_scrollBarLocation = 0.f;
 	m_eventgroupList.Add(MakeShareable<FString>(new FString("")));
 	m_vizSelection = m_eventgroupList[0];
+	m_eventgroupSubList.Add(MakeShareable<FString>(new FString("")));
+	m_subVizSelection = m_eventgroupSubList[0];
 
 	//Default heatmap state
 	m_heatmapType = HeatmapType::Population;

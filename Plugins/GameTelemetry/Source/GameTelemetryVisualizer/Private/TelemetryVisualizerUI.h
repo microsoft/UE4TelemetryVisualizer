@@ -62,6 +62,7 @@ public:
 
 	TSharedRef<SWidget> MakeWidgetForOption(TSharedPtr<FString> InOption);
 	void GenerateEventBox();
+	void GenerateSubEventBox(int index);
 
 	//Event Collection
 	void QueryResults(TSharedPtr<SQueryResult> results);
@@ -72,7 +73,9 @@ public:
 
 	//Viz tab event selection
 	void OnVizSelectionChanged(TSharedPtr<FString> NewValue, ESelectInfo::Type);
+	void OnSubVizSelectionChanged(TSharedPtr<FString> NewValue, ESelectInfo::Type);
 	FText GetCurrentVizItem() const;
+	FText GetCurrentSubVizItem() const;
 
 	//Query Scroll box
 	void GenerateQueryScrollBox();
@@ -182,14 +185,17 @@ public:
 	TSharedPtr<SScrollBox> m_scrollBox;
 	TSharedPtr<SScrollBox> m_queryScrollBox;
 	TArray<TSharedPtr<FString>> m_eventgroupList;
+	TArray<TSharedPtr<FString>> m_eventgroupSubList;
 	TArray<TSharedPtr<FString>> m_shapeList;
 	TArray<TSharedPtr<FString>> m_heatmapTypeList;
 	TArray<TSharedPtr<FString>> m_queryFieldList;
 	TArray<TSharedPtr<FString>> m_queryOperatorList;
 	TArray<TSharedPtr<FString>> m_queryAndOrList;
 	TSharedPtr<FString> m_vizSelection;
+	TSharedPtr<FString> m_subVizSelection;
 	TSharedPtr<SSlider> m_animationSlider;
 	TSharedPtr<SComboBox<TSharedPtr<FString>>> m_vizChoice;
+	TSharedPtr<SComboBox<TSharedPtr<FString>>> m_vizSubChoice;
 	TSharedPtr<SBorder> m_heatmapLowColorButton;
 	TSharedPtr<SBorder> m_heatmapHighColorButton;
 

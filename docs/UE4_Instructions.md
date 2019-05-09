@@ -114,14 +114,7 @@ FTelemetry::Position(Pawn->GetActorLocation())
 FTelemetry::Orientation(rotator.Vector())
 ```
 
-2.	If your event has related data that can be used by the heatmap generator (or that you would like attached to each event drawn), a “disp_val” property is needed to direct what event value is needed:
-
-Example:
-```cpp
-FTelemetry::DisplayValue(L”val_health”)
-```
-
-3.	The value that “disp_val” uses will also need to be populated
+2.	Provide data that you would like to view
 
     + For percentages, either prefix your property with “pct_” or use the construction shortcut Percentage.  This will let the visualizer know that the value is a float between 0 and 100.
    
@@ -143,8 +136,7 @@ FTelemetryBuilder Builder;
 Builder.SetProperties({
 	FTelemetry::Position(Pawn->GetActorLocation()),
 	FTelemetry::Orientation(rotator.Vector()),
-	FTelemetry::Value(L"health", MyHealth),
-        FTelemetry::DisplayValue(L”val_health”)
+	FTelemetry::Value(L"health", MyHealth)
 	});
 
 FTelemetry::Record(L”Health”, L”Gameplay”, L”1.3”, MoveTemp(Builder));
@@ -189,13 +181,14 @@ Once you have data uploaded, you are ready to start visualizing it!
 
     ![alt text](\images\heatmap.png)
 
-11. Type represents the type of heatmap you would like to generate.
+11. Value is what values within the events to use to generate the heatmap.
+12. Type represents the type of heatmap you would like to generate.
     + *Population* combines events into physical groups and displays a heatmap of the number of each event within a given group.
     + *Population - Bar* does the same, but generates a 3D bar graph over the XY plane.
     + *Value* also combines events into physical groups, but displays a heatmap of the average of the value of each event within a given group.
     + *Value - Bar* provides a 3D bar graph of value information.
-12. Shape and shape size represent the shape of the heatmap elements along with their radius.  The smaller the radius, the more detailed the information (though also the more complex the heatmap is to generate).
-13. The color range provides the color for the minimum and maximum values in the map.  Colors in between are a fade between the two colors chosen.
-14. Type range will populate when you generate the heatmap, but can be used to adjust the colors.  This can be helpful when your data has outlying values that can cause the heatmap to lack variability.  Adjust the range to remove extreme highs and lows to get more interesting information.
-15. Use Orientation will rotate the heatmap shapes to the average orientation of all events within each element.
-16. Apply to Animation will allow the animation controls above control animating the entire heatmap
+13. Shape and shape size represent the shape of the heatmap elements along with their radius.  The smaller the radius, the more detailed the information (though also the more complex the heatmap is to generate).
+14. The color range provides the color for the minimum and maximum values in the map.  Colors in between are a fade between the two colors chosen.
+15. Type range will populate when you generate the heatmap, but can be used to adjust the colors.  This can be helpful when your data has outlying values that can cause the heatmap to lack variability.  Adjust the range to remove extreme highs and lows to get more interesting information.
+16. Use Orientation will rotate the heatmap shapes to the average orientation of all events within each element.
+17. Apply to Animation will allow the animation controls above control animating the entire heatmap

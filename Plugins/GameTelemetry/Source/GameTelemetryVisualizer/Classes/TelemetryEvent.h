@@ -63,7 +63,7 @@ public:
 
 	//Value for an event
 	UPROPERTY(VisibleAnywhere, Category = "TelemetryEvent", Meta = (ToolTip = "Value"))
-    float value;
+	TMap<FString, FString> values;
 
 	//Session of the event
 	UPROPERTY(VisibleAnywhere, Category = "TelemetryEvent", Meta = (ToolTip = "Session ID"))
@@ -92,7 +92,7 @@ public:
 	void SetScale(float inScale);
 
 	//Set the value and range
-	void SetValue(float inValue) { value = inValue; }
+	void AddValue(FString name, FString value) { values.Add(name, value); }
 
 	//Return the private name or category
 	FString GetName() { return name; }
