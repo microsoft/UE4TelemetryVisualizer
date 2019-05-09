@@ -165,7 +165,6 @@ void ATelemetryEvent::SetEvent(const TSharedPtr<STelemetryEvent> inPointer)
 	if (InstanceTypes.Num() != 1) return;
 
 	time = inPointer->time;
-	value = inPointer->value;
 	location = inPointer->point;
 	session = inPointer->session;
 	orientation = inPointer->orientation;
@@ -173,6 +172,11 @@ void ATelemetryEvent::SetEvent(const TSharedPtr<STelemetryEvent> inPointer)
 	build = inPointer->build;
 	name = inPointer->name;
 	category = inPointer->category;
+
+	for (auto& value : inPointer->values)
+	{
+		values.Add(value.Key, value.Value->AsString());
+	}
 
 	eventName = category + L" " + name;
 }

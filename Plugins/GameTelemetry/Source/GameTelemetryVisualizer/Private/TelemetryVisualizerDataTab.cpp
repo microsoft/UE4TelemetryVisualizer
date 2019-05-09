@@ -916,6 +916,24 @@ void FTelemetryVisualizerUI::GenerateEventBox()
 	}
 }
 
+void FTelemetryVisualizerUI::GenerateSubEventBox(int index)
+{
+	m_eventgroupSubList.Empty();
+	m_eventgroupSubList.Add(MakeShareable<FString>(new FString("")));
+	m_subVizSelection = m_eventgroupSubList[0];
+
+	for (auto& name : m_queryEventCollection[index].attributeNames)
+	{
+		m_eventgroupSubList.Add(MakeShareable<FString>(new FString(name)));
+	}
+
+	if (m_subVizSelection.IsValid())
+	{
+		m_vizSubChoice->SetSelectedItem(m_eventgroupSubList[0]);
+		m_vizSubChoice->RefreshOptions();
+	}
+}
+
 FReply FTelemetryVisualizerUI::SelectAll()
 {
 	for (int i = 0; i < m_filterCollection.Num(); i++)

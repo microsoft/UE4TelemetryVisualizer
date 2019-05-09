@@ -103,9 +103,6 @@ public:
 	// Orientation unit vector for an entity
 	FORCEINLINE static FTelemetryProperty Orientation(const FVector &Vec) { return FTelemetryProperty(TEXT("dir"), Vec); }
 
-	// The name of the value the visualizer will use
-	FORCEINLINE static FTelemetryProperty DisplayValue(const FString &Value) { return FTelemetryProperty("disp_val", Value); }
-
 	// Timestamp of the event using the client's clock by default
 	FORCEINLINE static FTelemetryProperty ClientTimestamp(const FDateTime &Value = FDateTime::UtcNow()) { return FTelemetryProperty("client_ts", Value); }
 

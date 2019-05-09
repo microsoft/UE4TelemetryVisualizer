@@ -358,6 +358,42 @@ TSharedRef<SDockTab> FTelemetryVisualizerUI::SpawnVizTab(const FSpawnTabArgs& Ta
 						.VAlign(VAlign_Fill)
 						.Padding(40.f, 10.f, 40.f, 5.f)
 					[
+						//Event to act on
+						SNew(SHorizontalBox)
+						+ SHorizontalBox::Slot()
+							.AutoWidth()
+							.Padding(2.f, 0.f, 0.f, 0.f)
+							.VAlign(VAlign_Center)
+							.HAlign(HAlign_Fill)
+						[
+							SNew(SBox)
+								.WidthOverride(90.f)
+							[
+								SNew(STextBlock).Text(LOCTEXT("Values", "Values"))
+							]
+						]
+						+ SHorizontalBox::Slot()
+							.Padding(2.f, 0.f, 0.f, 0.f)
+							.VAlign(VAlign_Center)
+							.HAlign(HAlign_Fill)
+						[
+							SAssignNew(m_vizSubChoice, SComboBox<TSharedPtr<FString>>)
+								.OptionsSource(&m_eventgroupSubList)
+								.OnSelectionChanged_Raw(this, &FTelemetryVisualizerUI::OnSubVizSelectionChanged)
+								.OnGenerateWidget_Raw(this, &FTelemetryVisualizerUI::MakeWidgetForOption)
+								.InitiallySelectedItem(m_subVizSelection)
+							[
+								SNew(STextBlock)
+									.Text_Raw(this, &FTelemetryVisualizerUI::GetCurrentSubVizItem)
+							]
+						]
+					]
+					+ SVerticalBox::Slot()
+						.AutoHeight()
+						.HAlign(HAlign_Fill)
+						.VAlign(VAlign_Fill)
+						.Padding(40.f, 5.f, 40.f, 5.f)
+					[
 						SNew(SHorizontalBox)
 						+ SHorizontalBox::Slot()
 							.AutoWidth()
@@ -673,6 +709,11 @@ FText FTelemetryVisualizerUI::GetCurrentVizItem() const
 	return FText::FromString(*m_vizSelection);
 }
 
+FText FTelemetryVisualizerUI::GetCurrentSubVizItem() const
+{
+	return FText::FromString(*m_subVizSelection);
+}
+
 void FTelemetryVisualizerUI::OnVizSelectionChanged(TSharedPtr<FString> NewValue, ESelectInfo::Type)
 {
 	if (NewValue.IsValid())
@@ -689,6 +730,7 @@ void FTelemetryVisualizerUI::OnVizSelectionChanged(TSharedPtr<FString> NewValue,
 			if (m_queryEventCollection[i].name == *NewValue)
 			{
 				m_anim_Control.UpdateContainer(&m_queryEventCollection[i]);
+				GenerateSubEventBox(i);
 			}
 		}
 
@@ -705,6 +747,18 @@ void FTelemetryVisualizerUI::OnVizSelectionChanged(TSharedPtr<FString> NewValue,
 			FTimespan totalTime = m_anim_Control.GetTimespan();
 			m_animationTotalTime->SetText(FText::Format(FTextFormat::FromString("{0}:{1}"), FText::AsNumber(totalTime.GetMinutes()), FText::AsNumber(totalTime.GetSeconds(), &format)));
 		}
+	}
+}
+
+void FTelemetryVisualizerUI::OnSubVizSelectionChanged(TSharedPtr<FString> NewValue, ESelectInfo::Type)
+{
+	if (NewValue.IsValid())
+	{
+		ResetRange();
+
+		m_subVizSelection = NewValue;
+
+		ResetRange();
 	}
 }
 
@@ -856,6 +910,8 @@ void FTelemetryVisualizerUI::OnHeatmapTypeSelectionChanged(TSharedPtr<FString> N
 		}
 
 		m_heatmapType = newType;
+
+		ResetRange();
 	}
 }
 
@@ -934,7 +990,7 @@ FReply FTelemetryVisualizerUI::GenerateHeatmap(SEventEditorContainer* collection
 	DestroyActors();
 	UWorld* currentTarget = GetLocalWorld();
 
-	if (currentTarget != nullptr && collection != nullptr)
+	if (currentTarget != nullptr && collection != nullptr && *m_subVizSelection != "")
 	{
 		if ((first == 0 && first == last) || (first == collection->events.Num() - 1 && first == last))
 		{
@@ -943,141 +999,130 @@ FReply FTelemetryVisualizerUI::GenerateHeatmap(SEventEditorContainer* collection
 		}
 
 		//Segment the world in to blocks of the specified size encompassing all points
-		FBox range = collection->GetPointRange(first, last);
-		float extent = m_heatmapSize / 2;
-		FVector extents(extent, extent, extent);
-		TArray<FBox> parts;
+		FVector origin = collection->GetPointRange(first, last).GetCenter();
+		FVector size(m_heatmapSize, m_heatmapSize, m_heatmapSize);
 
-		range.Max.X += m_heatmapSize;
-		range.Max.Y += m_heatmapSize;
-		range.Max.Z += m_heatmapSize;
+		//For each segment, collect all of the points inside and decide what data to watch based on the heatmap type
+		float scaledHeatmapSize = m_heatmapSize / 100;
+		ATelemetryEvent* tempActor;
+		FString tempName = "Heatmap";
+		FVector tempPoint;
+		TMap<FVector, HeatmapNode> heatmapNodes;
 
-		for (int x = range.Min.X + extent; x < range.Max.X; x += m_heatmapSize)
+		FActorSpawnParameters params;
+		params.Name = *tempName;
+
+		if (m_heatmapMinValue == -1 && m_heatmapMaxValue == -1)
 		{
-			for (int y = range.Min.Y + extent; y < range.Max.Y; y += m_heatmapSize)
+			int largestValue = 0;
+			int largestNumValue = 0;
+
+			if (m_heatmapOrientation)
 			{
-				for (int z = range.Min.Z + extent; z < range.Max.Z; z += m_heatmapSize)
+				for (int j = first; j <= last; j++)
 				{
-					parts.Add(FBox::BuildAABB(FVector(x, y, z), extents));
+					tempPoint = (collection->events[j]->point - origin) / size;
+					tempPoint.X = FMath::FloorToFloat(tempPoint.X);
+					tempPoint.Y = FMath::FloorToFloat(tempPoint.Y);
+					tempPoint.Z = FMath::FloorToFloat(tempPoint.Z);
+
+					HeatmapNode& tempEvent = heatmapNodes.FindOrAdd(tempPoint);
+
+					tempEvent.numValues++;
+					tempEvent.values += collection->events[j]->GetValue(*m_subVizSelection);
+					tempEvent.orientation += collection->events[j]->orientation;
+
+					largestValue = FMath::Max(largestValue, tempEvent.values / tempEvent.numValues);
+					largestNumValue = FMath::Max(largestNumValue, tempEvent.numValues);
+				}
+
+				for (auto& node : heatmapNodes)
+				{
+					node.Value.orientation = node.Value.orientation / node.Value.numValues;
+				}
+			}
+			else
+			{
+				for (int j = first; j <= last; j++)
+				{
+					tempPoint = (collection->events[j]->point - origin) / size;
+					tempPoint.X = FMath::FloorToFloat(tempPoint.X);
+					tempPoint.Y = FMath::FloorToFloat(tempPoint.Y);
+					tempPoint.Z = FMath::FloorToFloat(tempPoint.Z);
+
+					HeatmapNode& tempEvent = heatmapNodes.FindOrAdd(tempPoint);
+
+					tempEvent.numValues++;
+					tempEvent.values += collection->events[j]->GetValue(*m_subVizSelection);
+
+					largestValue = FMath::Max(largestValue, tempEvent.values / tempEvent.numValues);
+					largestNumValue = FMath::Max(largestNumValue, tempEvent.numValues);
+				}
+			}
+
+			m_heatmapMinValue = 0;
+
+			if (m_heatmapType == HeatmapType::Value || m_heatmapType == HeatmapType::Value_Bar)
+			{
+				if (m_subVizSelection->StartsWith("pct_"))
+				{
+					m_heatmapMaxValue = 100;
+				}
+				else
+				{
+					m_heatmapMaxValue = largestValue;
+				}
+			}
+			else
+			{
+				m_heatmapMaxValue = largestNumValue;
+			}
+
+			m_heatmapMinValueText->SetText(FText::FromString("0"));
+			m_heatmapMaxValueText->SetText(FText::FromString(FString::FromInt(m_heatmapMaxValue)));
+		}
+		else
+		{
+			if (m_heatmapOrientation)
+			{
+				for (int j = first; j <= last; j++)
+				{
+					tempPoint = (collection->events[j]->point - origin) / size;
+					tempPoint.X = FMath::FloorToFloat(tempPoint.X);
+					tempPoint.Y = FMath::FloorToFloat(tempPoint.Y);
+					tempPoint.Z = FMath::FloorToFloat(tempPoint.Z);
+
+					HeatmapNode& tempEvent = heatmapNodes.FindOrAdd(tempPoint);
+
+					tempEvent.numValues++;
+					tempEvent.values += collection->events[j]->GetValue(*m_subVizSelection);
+					tempEvent.orientation += collection->events[j]->orientation;
+				}
+
+				for (auto& node : heatmapNodes)
+				{
+					node.Value.orientation = node.Value.orientation / node.Value.numValues;
+				}
+			}
+			else
+			{
+				for (int j = first; j <= last; j++)
+				{
+					tempPoint = (collection->events[j]->point - origin) / size;
+					tempPoint.X = FMath::FloorToFloat(tempPoint.X);
+					tempPoint.Y = FMath::FloorToFloat(tempPoint.Y);
+					tempPoint.Z = FMath::FloorToFloat(tempPoint.Z);
+
+					HeatmapNode& tempEvent = heatmapNodes.FindOrAdd(tempPoint);
+
+					tempEvent.numValues++;
+					tempEvent.values += collection->events[j]->GetValue(*m_subVizSelection);
 				}
 			}
 		}
 
-		if (parts.Num() > 0)
+		if(heatmapNodes.Num() > 0)
 		{
-			//For each segment, collect all of the points inside and decide what data to watch based on the heatmap type
-			TArray<int> numValues;
-			TArray<int> values;
-			TArray<FVector> orientation;
-			float scaledHeatmapSize = m_heatmapSize / 100;
-			ATelemetryEvent* tempActor;
-			FString tempName = "Heatmap";
-
-			FActorSpawnParameters params;
-			params.Name = *tempName;
-
-			numValues.SetNumZeroed(parts.Num());
-			values.SetNumZeroed(parts.Num());
-			orientation.SetNumZeroed(parts.Num());
-
-			if (m_heatmapMinValue == -1 && m_heatmapMaxValue == -1)
-			{
-				int largestValue = 0;
-				int largestNumValue = 0;
-
-				if (m_heatmapOrientation)
-				{
-					for (int i = 0; i < parts.Num(); i++)
-					{
-						for (int j = first; j <= last; j++)
-						{
-							if (parts[i].IsInside(collection->events[j]->point))
-							{
-								numValues[i]++;
-								orientation[i] += collection->events[j]->orientation;
-								values[i] += collection->events[j]->value;
-							}
-						}
-
-						largestValue = FMath::Max(largestValue, values[i]);
-						largestNumValue = FMath::Max(largestNumValue, numValues[i]);
-						orientation[i] = orientation[i] / numValues[i];
-					}
-				}
-				else
-				{
-					for (int i = 0; i < parts.Num(); i++)
-					{
-						for (int j = first; j <= last; j++)
-						{
-							if (parts[i].IsInside(collection->events[j]->point))
-							{
-								numValues[i]++;
-								values[i] += collection->events[j]->value;
-							}
-						}
-
-						largestValue = FMath::Max(largestValue, values[i]);
-						largestNumValue = FMath::Max(largestNumValue, numValues[i]);
-					}
-				}
-
-				m_heatmapMinValue = 0;
-
-				if (m_heatmapType == HeatmapType::Value || m_heatmapType == HeatmapType::Value_Bar)
-				{
-					if (collection->IsPercentage())
-					{
-						m_heatmapMaxValue = 100;
-					}
-					else
-					{
-						m_heatmapMaxValue = largestValue;
-					}
-				}
-				else
-				{
-					m_heatmapMaxValue = largestNumValue;
-				}
-
-				m_heatmapMinValueText->SetText(FText::FromString("0"));
-				m_heatmapMaxValueText->SetText(FText::FromString(FString::FromInt(m_heatmapMaxValue)));
-			}
-			else
-			{
-				if (m_heatmapOrientation)
-				{
-					for (int i = 0; i < parts.Num(); i++)
-					{
-						for (int j = first; j <= last; j++)
-						{
-							if (parts[i].IsInside(collection->events[j]->point))
-							{
-								numValues[i]++;
-								orientation[i] += collection->events[j]->orientation;
-								values[i] += collection->events[j]->value;
-							}
-						}
-
-						orientation[i] = orientation[i] / numValues[i];
-					}
-				}
-				else
-				{
-					for (int i = 0; i < parts.Num(); i++)
-					{
-						for (int j = first; j <= last; j++)
-						{
-							if (parts[i].IsInside(collection->events[j]->point))
-							{
-								numValues[i]++;
-								values[i] += collection->events[j]->value;
-							}
-						}
-					}
-				}
-			}
-
 			//For each section, add instanced mesh to the master mesh and set its shape and color as needed
 			tempActor = currentTarget->SpawnActor<ATelemetryEvent>(FVector::ZeroVector, FRotator::ZeroRotator, params);
 			tempActor->SetActorLabel(*tempName);
@@ -1087,70 +1132,54 @@ FReply FTelemetryVisualizerUI::GenerateHeatmap(SEventEditorContainer* collection
 
 			if (m_heatmapType == HeatmapType::Value)
 			{
-				for (int i = 0; i < parts.Num(); i++)
+				for (auto& node : heatmapNodes)
 				{
-					if (values[i] > 0)
-					{
-						tempValue = ((float)values[i] / numValues[i]) / m_heatmapMaxValue;
-						tempColorValue = (((float)values[i] / numValues[i]) - m_heatmapMinValue) / (m_heatmapMaxValue - m_heatmapMinValue);
-						tempColorValue = FMath::Max(tempColorValue, 0.f);
-						tempColorValue = FMath::Min(tempColorValue, (float)m_heatmapMaxValue);
+					tempValue = (float)node.Value.values / node.Value.numValues;
+					tempColorValue = (tempValue - m_heatmapMinValue) / (m_heatmapMaxValue - m_heatmapMinValue);
+					tempColorValue = FMath::Clamp(tempColorValue, 0.f, 1.f);
 
-						tempActor->AddEvent(parts[i].GetCenter(), orientation[i], m_heatmapColor.GetColorFromRange(tempColorValue), m_heatmapShapeType, scaledHeatmapSize, tempValue);
-					}
+					tempActor->AddEvent((node.Key * size) + origin, node.Value.orientation, m_heatmapColor.GetColorFromRange(tempColorValue), m_heatmapShapeType, scaledHeatmapSize, tempValue);
 				}
 			}
 			else if (m_heatmapType == HeatmapType::Population)
 			{
-				for (int i = 0; i < parts.Num(); i++)
+				for (auto& node : heatmapNodes)
 				{
-					if (numValues[i] > 0)
-					{
-						tempValue = (float)numValues[i] / m_heatmapMaxValue;
-						tempColorValue = (float)(numValues[i] - m_heatmapMinValue) / (m_heatmapMaxValue - m_heatmapMinValue);
-						tempColorValue = FMath::Max(tempColorValue, 0.f);
-						tempColorValue = FMath::Min(tempColorValue, (float)m_heatmapMaxValue);
+					tempValue = (float)node.Value.numValues / m_heatmapMaxValue;
+					tempColorValue = (float)(node.Value.numValues - m_heatmapMinValue) / (m_heatmapMaxValue - m_heatmapMinValue);
+					tempColorValue = FMath::Clamp(tempColorValue, 0.f, 1.f);
 
-						tempActor->AddEvent(parts[i].GetCenter(), orientation[i], m_heatmapColor.GetColorFromRange(tempColorValue), m_heatmapShapeType, scaledHeatmapSize, tempValue);
-					}
+					tempActor->AddEvent((node.Key * size) + origin, node.Value.orientation, m_heatmapColor.GetColorFromRange(tempColorValue), m_heatmapShapeType, scaledHeatmapSize, tempValue);
 				}
 			}
 			else if (m_heatmapType == HeatmapType::Value_Bar)
 			{
 				float tempHeight;
 
-				for (int i = 0; i < parts.Num(); i++)
+				for (auto& node : heatmapNodes)
 				{
-					if (values[i] > 0)
-					{
-						tempValue = ((float)values[i] / numValues[i]) / m_heatmapMaxValue;
-						tempColorValue = (((float)values[i] / numValues[i]) - m_heatmapMinValue) / (m_heatmapMaxValue - m_heatmapMinValue);
-						tempColorValue = FMath::Max(tempColorValue, 0.f);
-						tempColorValue = FMath::Min(tempColorValue, (float)m_heatmapMaxValue);
-						tempHeight = (((float)values[i] / numValues[i]) / m_heatmapMaxValue) * scaledHeatmapSize;
+					tempValue = (float)node.Value.values / node.Value.numValues;
+					tempColorValue = (tempValue - m_heatmapMinValue) / (m_heatmapMaxValue - m_heatmapMinValue);
+					tempColorValue = FMath::Clamp(tempColorValue, 0.f, 1.f);
+					tempHeight = (((float)node.Value.values / node.Value.numValues) / m_heatmapMaxValue) * scaledHeatmapSize;
 
-						tempActor->AddEvent(parts[i].GetCenter(), FVector::ZeroVector, m_heatmapColor.GetColorFromRange(tempColorValue), EventType::Cube,
-							FBox::BuildAABB(FVector(0, 0, (tempHeight / 2) * 100), FVector(scaledHeatmapSize, scaledHeatmapSize, tempHeight)), tempValue);
-					}
+					tempActor->AddEvent((node.Key * size) + origin, FVector::ZeroVector, m_heatmapColor.GetColorFromRange(tempColorValue), EventType::Cube,
+						FBox::BuildAABB(FVector(0, 0, (tempHeight / 2) * 100), FVector(scaledHeatmapSize, scaledHeatmapSize, tempHeight)), tempValue);
 				}
 			}
 			else if (m_heatmapType == HeatmapType::Population_Bar)
 			{
 				float tempHeight;
 
-				for (int i = 0; i < parts.Num(); i++)
+				for (auto& node : heatmapNodes)
 				{
-					if (numValues[i] > 0)
-					{
-						tempValue = (float)numValues[i] / m_heatmapMaxValue;
-						tempColorValue = (float)(numValues[i] - m_heatmapMinValue) / (m_heatmapMaxValue - m_heatmapMinValue);
-						tempColorValue = FMath::Max(tempColorValue, 0.f);
-						tempColorValue = FMath::Min(tempColorValue, (float)m_heatmapMaxValue);
-						tempHeight = ((float)numValues[i] / m_heatmapMaxValue) * scaledHeatmapSize;
+					tempValue = (float)node.Value.numValues / m_heatmapMaxValue;
+					tempColorValue = (float)(node.Value.numValues - m_heatmapMinValue) / (m_heatmapMaxValue - m_heatmapMinValue);
+					tempColorValue = FMath::Clamp(tempColorValue, 0.f, 1.f);
+					tempHeight = ((float)node.Value.numValues / m_heatmapMaxValue) * scaledHeatmapSize;
 
-						tempActor->AddEvent(parts[i].GetCenter(), FVector::ZeroVector, m_heatmapColor.GetColorFromRange(tempColorValue), EventType::Cube,
-							FBox::BuildAABB(FVector(0, 0, (tempHeight / 2) * 100), FVector(scaledHeatmapSize, scaledHeatmapSize, tempHeight)), tempValue);
-					}
+					tempActor->AddEvent((node.Key * size) + origin, FVector::ZeroVector, m_heatmapColor.GetColorFromRange(tempColorValue), EventType::Cube,
+						FBox::BuildAABB(FVector(0, 0, (tempHeight / 2) * 100), FVector(scaledHeatmapSize, scaledHeatmapSize, tempHeight)), tempValue);
 				}
 			}
 
@@ -1163,134 +1192,3 @@ FReply FTelemetryVisualizerUI::GenerateHeatmap(SEventEditorContainer* collection
 
 	return FReply::Handled();
 }
-
-//void FTelemetryVisualizerUI::CreateHeatmapActor(UWorld* drawTarget, int index, FVector location, int value, int range, EventType shape, float size)
-//{
-//	ATelemetryEvent* tempActor;
-//	FString tempName;
-//		
-//	tempName = "Heatmap " + FString::FromInt(index);
-//
-//	FActorSpawnParameters params;
-//	params.Name = *tempName;
-//
-//	tempActor = drawTarget->SpawnActor<ATelemetryEvent>(FVector::ZeroVector, FRotator::ZeroRotator, params);
-//	tempActor->SetActorLabel(*tempName);
-//	tempActor->AddEvent(location, m_heatmapColor.GetColorFromRange((float)value / range), shape, size / 100);
-//
-//	tempActor->SetValue(value);
-//	tempActor->SetRange(range);
-//
-//	tempName = "/TelemetryEvents/Heatmap";
-//	tempActor->SetFolderPath(*tempName);
-//
-//	m_eventActors.Add(tempActor);
-//}
-//
-//void FTelemetryVisualizerUI::CombineHeatmap()
-//{
-//	TArray<AStaticMeshActor*> AllActors;
-//	TArray<UPrimitiveComponent*> AllComponents;
-//	FString BasePackageName;
-//	FMeshMergingSettings MeshMergingSettings;
-//
-//	if (m_eventActors.Num() == 0) return;
-//
-//	AllActors.SetNum(m_eventActors.Num());
-//	AllComponents.SetNum(m_eventActors.Num());
-//
-//	for (int i = 0; i < m_eventActors.Num(); i++)
-//	{
-//		AllActors[i] = (AStaticMeshActor*)m_eventActors[i];
-//
-//		TInlineComponentArray<UStaticMeshComponent*> ComponentArray;
-//		AllActors[i]->GetComponents<UStaticMeshComponent>(ComponentArray);
-//
-//		for (UStaticMeshComponent* MeshCmp : ComponentArray)
-//		{
-//			if (MeshCmp->GetStaticMesh() && MeshCmp->GetStaticMesh()->RenderData.IsValid())
-//			{
-//				AllComponents[i] = MeshCmp;
-//				break;
-//			}
-//		}
-//	}
-//
-//	TArray<UObject*> CreatedAssets;
-//	FVector MergedActorLocation;
-//	const float ScreenAreaSize = TNumericLimits<float>::Max();
-//	const IMeshMergeUtilities& MeshUtilities = FModuleManager::Get().LoadModuleChecked<IMeshMergeModule>("MeshMergeUtilities").GetUtilities();
-//	MeshUtilities.MergeComponentsToStaticMesh(
-//		AllComponents,
-//		AllActors[0]->GetWorld(),
-//		MeshMergingSettings,
-//		nullptr,
-//		nullptr,
-//		BasePackageName,
-//		CreatedAssets,
-//		MergedActorLocation,
-//		ScreenAreaSize,
-//		true);
-//
-//	UWorld* currentTarget = GetLocalWorld();
-//
-//	if (currentTarget != nullptr)
-//	{
-//		DestroyActors();
-//		AStaticMeshActor* tempActor;
-//		FString tempName;
-//		FActorSpawnParameters params;
-//		UStaticMesh* mesh;
-//		UMaterialInterface * Material;
-//		UMaterialInstanceDynamic* matInstance;
-//
-//		if (m_material == nullptr)
-//		{
-//			for (TObjectIterator<UMaterial> It; It; ++It)
-//			{
-//				if ((*It)->GetName() == "M_Telemetry")
-//				{
-//					m_material = *It;
-//					break;
-//				}
-//			}
-//		}
-//
-//		for (int i = 0; i < CreatedAssets.Num(); i++)
-//		{
-//			if (CreatedAssets[i]->IsA(UStaticMesh::StaticClass()))
-//			{
-//				mesh = (UStaticMesh*)CreatedAssets[i];
-//				tempName = "Heatmap " + FString::FromInt(i);
-//				params.Name = *tempName;
-//
-//				tempActor = currentTarget->SpawnActor<AStaticMeshActor>(MergedActorLocation, FRotator::ZeroRotator, params);
-//				tempActor->SetActorLabel(*tempName);
-//				tempActor->GetStaticMeshComponent()->SetRelativeLocation(FVector(0.0f, 0.0f, 0.0f));
-//				tempActor->GetStaticMeshComponent()->SetStaticMesh(mesh);
-//
-//				for (int j = 0; j < tempActor->GetStaticMeshComponent()->GetNumMaterials(); j++)
-//				{
-//					if (m_material != nullptr)
-//					{
-//						tempActor->GetStaticMeshComponent()->SetMaterial(j, m_material);
-//
-//						Material = tempActor->GetStaticMeshComponent()->GetMaterial(j);
-//						matInstance = tempActor->GetStaticMeshComponent()->CreateDynamicMaterialInstance(j, Material);
-//
-//						if (matInstance != nullptr)
-//						{
-//							matInstance->SetVectorParameterValue("Color", FLinearColor(FColor::Green));
-//							tempActor->GetStaticMeshComponent()->SetMaterial(j, matInstance);
-//						}
-//					}
-//				}
-//
-//				tempName = "/TelemetryEvents/Heatmap";
-//				tempActor->SetFolderPath(*tempName);
-//
-//				m_eventActors.Add(tempActor);
-//			}
-//		}
-//	}
-//}

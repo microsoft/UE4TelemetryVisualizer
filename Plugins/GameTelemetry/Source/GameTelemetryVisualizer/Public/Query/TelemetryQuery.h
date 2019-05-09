@@ -358,6 +358,17 @@ public:
 		return GetVector(CAM_DIR);
 	}
 
+	void GetAttributes(TMap<FString, TSharedPtr<FJsonValue>>& inMap)
+	{
+		for (auto& attr : Attributes)
+		{
+			if (attr.Key.StartsWith("pct_") || attr.Key.StartsWith("val_"))
+			{
+				inMap.Add(attr.Key, attr.Value);
+			}
+		}
+	}
+
 	bool GetString(const FString &Name, FString &OutString) const
 	{
 		TSharedPtr<FJsonValue> Value = Attributes.FindRef(Name);
