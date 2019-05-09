@@ -1,7 +1,7 @@
 # UE4 Telemetry Visualizer
 ![View Telemetry](docs/images/points.png)
 
-This is a plugin for adding telemetry to your UE4 game and visualizing that telemetry in the UE4 editor. It is featured in the [Azure Gaming Reference Architectures](https://docs.microsoft.com/en-us/gaming/azure/reference-architectures/analytics-in-editor-debugging).  
+This is a plugin for adding telemetry to your UE4 game and visualizing that telemetry in the UE4 editor. It is featured in the [Azure Gaming Reference Architectures](https://docs.microsoft.com/en-us/gaming/azure/reference-architectures/analytics-in-editor-debugging). There is also a [Unity version of this plugin](https://github.com/Microsoft/UnityTelemetryVisualizer). 
 
 ## Summary
 Game telemetry itself is nothing new, but the number of "out of the box" solutions for games to leverage while ___in development___ are next to none.  Historically, developers would use log files to debug issues, which worked fine for local debugging. Today's games more closely resemble distributed systems, interacting with other clients, servers, and various cloud services regularly.
