@@ -16,31 +16,31 @@
 class GAMETELEMETRY_API FTelemetryService
 {
 public:
-	// The authentication, if used, to authenticate with the Azure Functions
+    // The authentication, if used, to authenticate with the Azure Functions
 
 
-	static TSharedRef<IHttpRequest> CreateServiceRequest()
-	{
-		if (!IsInitialized)
-		{
-			UseKey = FTelemetryConfiguration::GetString(TEXT("AuthenticationKey"), AuthenticationKey);
-			IsInitialized = true;
-		}
+    static TSharedRef<IHttpRequest> CreateServiceRequest()
+    {
+        if (!IsInitialized)
+        {
+            UseKey = FTelemetryConfiguration::GetString(TEXT("AuthenticationKey"), AuthenticationKey);
+            IsInitialized = true;
+        }
 
-		auto request = FHttpModule::Get().CreateRequest();
+        auto request = FHttpModule::Get().CreateRequest();
 
-		// @todo: Add any other common http request initialization code here
+        // @todo: Add any other common http request initialization code here
 
-		if (UseKey)
-		{
-			// https://docs.microsoft.com/en-us/azure/azure-functions/functions-bindings-http-webhook#api-key-authorization
-			request->SetHeader(TEXT("x-functions-key"), AuthenticationKey);
-		}
-		return request;
-	}
+        if (UseKey)
+        {
+            // https://docs.microsoft.com/en-us/azure/azure-functions/functions-bindings-http-webhook#api-key-authorization
+            request->SetHeader(TEXT("x-functions-key"), AuthenticationKey);
+        }
+        return request;
+    }
 
 private:
-	static FString AuthenticationKey;
-	static bool UseKey;
-	static bool IsInitialized;
+    static FString AuthenticationKey;
+    static bool UseKey;
+    static bool IsInitialized;
 };

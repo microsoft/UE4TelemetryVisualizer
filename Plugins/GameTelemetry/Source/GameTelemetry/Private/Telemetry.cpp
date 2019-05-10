@@ -20,17 +20,17 @@ DEFINE_LOG_CATEGORY(LogTelemetry);
 
 FString FTelemetry::DumpJson(FTelemetryProperties Properties)
 {
-	FString Result;
+    FString Result;
 
-	TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&Result);
+    TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&Result);
 
-	Writer->WriteObjectStart();
-	FTelemetryJsonSerializer::Serialize(Properties, Writer);
-	Writer->WriteObjectEnd();
+    Writer->WriteObjectStart();
+    FTelemetryJsonSerializer::Serialize(Properties, Writer);
+    Writer->WriteObjectEnd();
 
-	Writer->Close();
+    Writer->Close();
 
-	return Result;
+    return Result;
 }
 
 

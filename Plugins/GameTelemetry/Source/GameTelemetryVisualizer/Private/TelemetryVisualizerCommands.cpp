@@ -16,9 +16,9 @@
 void TelemetryVisualizerCommands::RegisterCommands()
 {
 #define LOCTEXT_NAMESPACE "TelemetryVisualizerCommands"
-	UI_COMMAND(m_displayDataTab, "Data Viewer", "Data Viewer", EUserInterfaceActionType::Check, FInputGesture());
-	UI_COMMAND(m_displayVizTab, "Visualization Tools", "Vizualization Tools", EUserInterfaceActionType::Check, FInputGesture());
-	UI_COMMAND(m_displayAll, "Open All", "Open All", EUserInterfaceActionType::Check, FInputGesture());
+    UI_COMMAND(m_displayDataTab, "Data Viewer", "Data Viewer", EUserInterfaceActionType::Check, FInputGesture());
+    UI_COMMAND(m_displayVizTab, "Visualization Tools", "Vizualization Tools", EUserInterfaceActionType::Check, FInputGesture());
+    UI_COMMAND(m_displayAll, "Open All", "Open All", EUserInterfaceActionType::Check, FInputGesture());
 #undef LOCTEXT_NAMESPACE
 }
 

@@ -19,15 +19,15 @@ class TelemetryVisualizerCommands : public TCommands<TelemetryVisualizerCommands
 {
 public:
 
-	TelemetryVisualizerCommands()
-		: TCommands<TelemetryVisualizerCommands>(TEXT("TelemetryVisualizer"), NSLOCTEXT("Contexts", "TelemetryVisualizer", "Telemetry Plugin"), NAME_None, FEditorStyle::GetStyleSetName())
-	{
-	}
+    TelemetryVisualizerCommands()
+        : TCommands<TelemetryVisualizerCommands>(TEXT("TelemetryVisualizer"), NSLOCTEXT("Contexts", "TelemetryVisualizer", "Telemetry Plugin"), NAME_None, FEditorStyle::GetStyleSetName())
+    {
+    }
 
-	virtual void RegisterCommands() override;
+    virtual void RegisterCommands() override;
 
-	TSharedPtr< FUICommandInfo > m_displayDataTab;
-	TSharedPtr< FUICommandInfo > m_displayVizTab;
-	TSharedPtr< FUICommandInfo > m_displayAll;
+    TSharedPtr< FUICommandInfo > m_displayDataTab;
+    TSharedPtr< FUICommandInfo > m_displayVizTab;
+    TSharedPtr< FUICommandInfo > m_displayAll;
 };
 #endif

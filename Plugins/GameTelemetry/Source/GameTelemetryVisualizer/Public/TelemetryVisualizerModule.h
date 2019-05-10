@@ -18,13 +18,13 @@ class ITelemetryEngine;
 class FTelemetryVisualizerUI;
 
 class FTelemetryVisualizerModule :
-	public IModuleInterface
+    public IModuleInterface
 {
 public:
-	virtual void StartupModule() override;
-	virtual void ShutdownModule() override;
+    virtual void StartupModule() override;
+    virtual void ShutdownModule() override;
 
 private:
-	TUniquePtr<FTelemetryVisualizerUI> EditorUI;
+    TUniquePtr<FTelemetryVisualizerUI> EditorUI;
 };
 

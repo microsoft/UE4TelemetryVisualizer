@@ -114,7 +114,7 @@ FTelemetry::Position(Pawn->GetActorLocation())
 FTelemetry::Orientation(rotator.Vector())
 ```
 
-2.	Provide data that you would like to view
+2.	Values need specific names in order for the visualizer to recognize them
 
     + For percentages, either prefix your property with “pct_” or use the construction shortcut Percentage.  This will let the visualizer know that the value is a float between 0 and 100.
    
@@ -136,7 +136,7 @@ FTelemetryBuilder Builder;
 Builder.SetProperties({
 	FTelemetry::Position(Pawn->GetActorLocation()),
 	FTelemetry::Orientation(rotator.Vector()),
-	FTelemetry::Value(L"health", MyHealth)
+	FTelemetry::Value(L"health", MyHealth),
 	});
 
 FTelemetry::Record(L”Health”, L”Gameplay”, L”1.3”, MoveTemp(Builder));
@@ -181,7 +181,7 @@ Once you have data uploaded, you are ready to start visualizing it!
 
     ![alt text](\images\heatmap.png)
 
-11. Value is what values within the events to use to generate the heatmap.
+11. Values represents the group of values you would like the heatmap to use.
 12. Type represents the type of heatmap you would like to generate.
     + *Population* combines events into physical groups and displays a heatmap of the number of each event within a given group.
     + *Population - Bar* does the same, but generates a 3D bar graph over the XY plane.
