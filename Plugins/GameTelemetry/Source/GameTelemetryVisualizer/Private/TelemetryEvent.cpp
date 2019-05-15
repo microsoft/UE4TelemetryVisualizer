@@ -18,219 +18,212 @@
 ATelemetryEvent::ATelemetryEvent(const FObjectInitializer& InInitializer)
 : AActor(InInitializer)
 {
-	//Cannot move this actor or interact in play
-	bLockLocation = true;
-	bCanBeDamaged = false;
-	bIsEditorOnlyActor = true;
-	SetActorEnableCollision(false);
+    //Cannot move this actor or interact in play
+    bLockLocation = true;
+    bCanBeDamaged = false;
+    bIsEditorOnlyActor = true;
+    SetActorEnableCollision(false);
 
-	//Default scale
-	scale = FVector(0.5f);
+    //Default scale
+    scale = FVector(0.5f);
 
-	//Cache pointer for material
-	static ConstructorHelpers::FObjectFinder<UMaterial> MaterialAsset(TEXT("/GameTelemetry/Materials/M_Telemetry.M_Telemetry"));
-	if (MaterialAsset.Succeeded())
-	{
-		MeshMaterial = MaterialAsset.Object;
-	}
+    //Cache pointer for material
+    static ConstructorHelpers::FObjectFinder<UMaterial> MaterialAsset(TEXT("/GameTelemetry/Materials/M_Telemetry.M_Telemetry"));
+    if (MaterialAsset.Succeeded())
+    {
+        MeshMaterial = MaterialAsset.Object;
+    }
 
-	//Cache pointers each possible mesh.  This call is required to be in the constructor
-	ConstructorHelpers::FObjectFinder<UStaticMesh> MeshConeAsset(TEXT("/Engine/BasicShapes/Cone.Cone"));
-	ConstructorHelpers::FObjectFinder<UStaticMesh> MeshCubeAsset(TEXT("/Engine/BasicShapes/Cube.Cube"));
-	ConstructorHelpers::FObjectFinder<UStaticMesh> MeshCylinderAsset(TEXT("/Engine/BasicShapes/Cylinder.Cylinder"));
-	ConstructorHelpers::FObjectFinder<UStaticMesh> MeshPlaneAsset(TEXT("/Engine/BasicShapes/Plane.Plane"));
-	ConstructorHelpers::FObjectFinder<UStaticMesh> MeshSphereAsset(TEXT("/Engine/BasicShapes/Sphere.Sphere"));
+    //Cache pointers each possible mesh.  This call is required to be in the constructor
+    ConstructorHelpers::FObjectFinder<UStaticMesh> MeshConeAsset(TEXT("/Engine/BasicShapes/Cone.Cone"));
+    ConstructorHelpers::FObjectFinder<UStaticMesh> MeshCubeAsset(TEXT("/Engine/BasicShapes/Cube.Cube"));
+    ConstructorHelpers::FObjectFinder<UStaticMesh> MeshCylinderAsset(TEXT("/Engine/BasicShapes/Cylinder.Cylinder"));
+    ConstructorHelpers::FObjectFinder<UStaticMesh> MeshPlaneAsset(TEXT("/Engine/BasicShapes/Plane.Plane"));
+    ConstructorHelpers::FObjectFinder<UStaticMesh> MeshSphereAsset(TEXT("/Engine/BasicShapes/Sphere.Sphere"));
 
-	if (MeshConeAsset.Succeeded())
-	{
-		MeshCone = MeshConeAsset.Object;
-	}
-	if (MeshCubeAsset.Succeeded())
-	{
-		MeshCube = MeshCubeAsset.Object;
-	}
-	if (MeshCylinderAsset.Succeeded())
-	{
-		MeshCylinder = MeshCylinderAsset.Object;
-	}
-	if (MeshPlaneAsset.Succeeded())
-	{
-		MeshPlane = MeshPlaneAsset.Object;
-	}
-	if (MeshSphereAsset.Succeeded())
-	{
-		MeshSphere = MeshSphereAsset.Object;
-	}
+    if (MeshConeAsset.Succeeded())
+    {
+        MeshCone = MeshConeAsset.Object;
+    }
+    if (MeshCubeAsset.Succeeded())
+    {
+        MeshCube = MeshCubeAsset.Object;
+    }
+    if (MeshCylinderAsset.Succeeded())
+    {
+        MeshCylinder = MeshCylinderAsset.Object;
+    }
+    if (MeshPlaneAsset.Succeeded())
+    {
+        MeshPlane = MeshPlaneAsset.Object;
+    }
+    if (MeshSphereAsset.Succeeded())
+    {
+        MeshSphere = MeshSphereAsset.Object;
+    }
 }
 
-void ATelemetryEvent::AddEvent(FVector inLocation, FVector inOrientation, FColor inColor, EventType inType, FBox inScale, float ratio)
+void ATelemetryEvent::AddEvent(FVector inLocation, FVector inOrientation, FColor inColor, EventType inType, FBox inScale, FString inName)
 {
-	UInstancedStaticMeshComponent* NewComponent = nullptr;
+    UInstancedStaticMeshComponent* NewComponent = nullptr;
 
-	scale = inScale.GetExtent();
+    scale = inScale.GetExtent();
 
-	for (int i = 0; i < InstanceTypes.Num(); i++)
-	{
-		if (inColor == InstanceTypes[i].color && inType == InstanceTypes[i].type)
-		{
-			NewComponent = InstanceTypes[i].component;
-		}
-	}
+    for (int i = 0; i < InstanceTypes.Num(); i++)
+    {
+        if (inColor == InstanceTypes[i].color && inType == InstanceTypes[i].type)
+        {
+            NewComponent = InstanceTypes[i].component;
+        }
+    }
 
-	FString tempName;
+    if (NewComponent == nullptr)
+    {
+        if (GetRootComponent())
+        {
+            // Attach to root if we already have one
+            NewComponent->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
+        }
+        else
+        {
+            // Make a new root if we dont have a root already
+            SetRootComponent(NewComponent);
+        }
 
-	if (NewComponent == nullptr)
-	{
-		if (GetRootComponent())
-		{
-			// Attach to root if we already have one
-			NewComponent->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
-		}
-		else
-		{
-			// Make a new root if we dont have a root already
-			SetRootComponent(NewComponent);
-		}
+        NewComponent = NewObject<UInstancedStaticMeshComponent>(this, *inName);
 
-		if (ratio < 2.f)
-		{
-			tempName = "HeatmapGroup_" + FString::SanitizeFloat(ratio);
-		}
-		else
-		{
-			tempName = "Mesh";
-		}
+        //Set mesh
+        UStaticMesh* newMesh = nullptr;
 
-		NewComponent = NewObject<UInstancedStaticMeshComponent>(this, *tempName);
+        switch (inType)
+        {
+        case EventType::Cone:
+            newMesh = MeshCone;
+            break;
+        case EventType::Cube:
+            newMesh = MeshCube;
+            break;
+        case EventType::Cylinder:
+            newMesh = MeshCylinder;
+            break;
+        case EventType::Plane:
+            newMesh = MeshPlane;
+            break;
+        case EventType::Sphere:
+            newMesh = MeshSphere;
+            break;
+        }
 
-		//Set mesh
-		UStaticMesh* newMesh = nullptr;
+        if (newMesh != nullptr)
+        {
+            NewComponent->SetStaticMesh(newMesh);
+            NewComponent->SetWorldScale3D(scale);
+        }
 
-		switch (inType)
-		{
-		case EventType::Cone:
-			newMesh = MeshCone;
-			break;
-		case EventType::Cube:
-			newMesh = MeshCube;
-			break;
-		case EventType::Cylinder:
-			newMesh = MeshCylinder;
-			break;
-		case EventType::Plane:
-			newMesh = MeshPlane;
-			break;
-		case EventType::Sphere:
-			newMesh = MeshSphere;
-			break;
-		}
+        //Set material
+        UMaterialInstanceDynamic* matInstance = NewComponent->CreateDynamicMaterialInstance(0, MeshMaterial);
 
-		if (newMesh != nullptr)
-		{
-			NewComponent->SetStaticMesh(newMesh);
-			NewComponent->SetWorldScale3D(scale);
-		}
+        if (matInstance != nullptr)
+        {
+            matInstance->SetVectorParameterValue("Color", FLinearColor(inColor));
+            NewComponent->SetMaterial(0, matInstance);
+        }
 
-		//Set material
-		UMaterialInstanceDynamic* matInstance = NewComponent->CreateDynamicMaterialInstance(0, MeshMaterial);
+        // Take 'instanced' ownership so it persists with this actor
+        RemoveOwnedComponent(NewComponent);
+        NewComponent->CreationMethod = EComponentCreationMethod::Instance;
+        AddOwnedComponent(NewComponent);
+        
+        NewComponent->RegisterComponent();
 
-		if (matInstance != nullptr)
-		{
-			matInstance->SetVectorParameterValue("Color", FLinearColor(inColor));
-			NewComponent->SetMaterial(0, matInstance);
-		}
+        InstanceTypes.Add(InstanceType(NewComponent, inColor, inType));
+    }
 
-		// Take 'instanced' ownership so it persists with this actor
-		RemoveOwnedComponent(NewComponent);
-		NewComponent->CreationMethod = EComponentCreationMethod::Instance;
-		AddOwnedComponent(NewComponent);
-		
-		NewComponent->RegisterComponent();
+    FRotator tempRot = FRotator::ZeroRotator;
+    if (inOrientation != FVector::ZeroVector)
+    {
+        tempRot = inOrientation.ToOrientationRotator();
+        tempRot.Pitch -= 90.f;
+    }
 
-		InstanceTypes.Add(InstanceType(NewComponent, inColor, inType));
-	}
-
-	FRotator tempRot = FRotator::ZeroRotator;
-	if (inOrientation != FVector::ZeroVector)
-	{
-		tempRot = inOrientation.ToOrientationRotator();
-		tempRot.Pitch -= 90.f;
-	}
-
-	NewComponent->AddInstanceWorldSpace(FTransform(tempRot, inLocation + inScale.GetCenter(), scale));
+    NewComponent->AddInstanceWorldSpace(FTransform(tempRot, inLocation + inScale.GetCenter(), scale));
 }
 
 void ATelemetryEvent::SetEvent(const TSharedPtr<STelemetryEvent> inPointer)
 {
-	if (InstanceTypes.Num() != 1) return;
+    if (InstanceTypes.Num() != 1) return;
 
-	time = inPointer->time;
-	value = inPointer->value;
-	location = inPointer->point;
-	session = inPointer->session;
-	orientation = inPointer->orientation;
-	user = inPointer->user;
-	build = inPointer->build;
-	name = inPointer->name;
-	category = inPointer->category;
+    time = inPointer->time;
+    location = inPointer->point;
+    session = inPointer->session;
+    orientation = inPointer->orientation;
+    user = inPointer->user;
+    build = inPointer->build;
+    name = inPointer->eventname;
+    category = inPointer->category;
 
-	eventName = category + L" " + name;
+    for (auto& value : inPointer->values)
+    {
+        values.Add(value.Key, value.Value->AsString());
+    }
+
+    eventName = category + L" " + name;
 }
 
 void ATelemetryEvent::SetColor(FColor inColor)
 {
-	if (InstanceTypes.Num() != 1) return;
+    if (InstanceTypes.Num() != 1) return;
 
-	UMaterialInterface * Material;
-	UMaterialInstanceDynamic* matInstance;
+    UMaterialInterface * Material;
+    UMaterialInstanceDynamic* matInstance;
 
-	Material = InstanceTypes[0].component->GetMaterial(0);
-	matInstance = InstanceTypes[0].component->CreateDynamicMaterialInstance(0, Material);
+    Material = InstanceTypes[0].component->GetMaterial(0);
+    matInstance = InstanceTypes[0].component->CreateDynamicMaterialInstance(0, Material);
 
-	if (matInstance != nullptr)
-	{
-		matInstance->SetVectorParameterValue("Color", FLinearColor(inColor));
-		InstanceTypes[0].component->SetMaterial(0, matInstance);
-	}
+    if (matInstance != nullptr)
+    {
+        matInstance->SetVectorParameterValue("Color", FLinearColor(inColor));
+        InstanceTypes[0].component->SetMaterial(0, matInstance);
+    }
 };
 
 void ATelemetryEvent::SetShapeType(EventType inType)
 {
-	if (InstanceTypes.Num() != 1) return;
+    if (InstanceTypes.Num() != 1) return;
 
-	UStaticMesh* newMesh = nullptr;
+    UStaticMesh* newMesh = nullptr;
 
-	switch (inType)
-	{
-	case EventType::Cone:
-		newMesh = MeshCone;
-		break;
-	case EventType::Cube:
-		newMesh = MeshCube;
-		break;
-	case EventType::Cylinder:
-		newMesh = MeshCylinder;
-		break;
-	case EventType::Plane:
-		newMesh = MeshPlane;
-		break;
-	case EventType::Sphere:
-		newMesh = MeshSphere;
-		break;
-	}
+    switch (inType)
+    {
+    case EventType::Cone:
+        newMesh = MeshCone;
+        break;
+    case EventType::Cube:
+        newMesh = MeshCube;
+        break;
+    case EventType::Cylinder:
+        newMesh = MeshCylinder;
+        break;
+    case EventType::Plane:
+        newMesh = MeshPlane;
+        break;
+    case EventType::Sphere:
+        newMesh = MeshSphere;
+        break;
+    }
 
-	if (newMesh != nullptr)
-	{
-		InstanceTypes[0].component->SetStaticMesh(newMesh);
-		InstanceTypes[0].component->SetWorldScale3D(scale);
-	}
+    if (newMesh != nullptr)
+    {
+        InstanceTypes[0].component->SetStaticMesh(newMesh);
+        InstanceTypes[0].component->SetWorldScale3D(scale);
+    }
 }
 
 void ATelemetryEvent::SetScale(float inScale)
 {
-	if (InstanceTypes.Num() != 1) return;
+    if (InstanceTypes.Num() != 1) return;
 
-	scale = FVector(inScale);
+    scale = FVector(inScale);
 
-	InstanceTypes[0].component->SetWorldScale3D(scale);
+    InstanceTypes[0].component->SetWorldScale3D(scale);
 }

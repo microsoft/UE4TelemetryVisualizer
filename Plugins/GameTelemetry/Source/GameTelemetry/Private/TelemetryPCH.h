@@ -22,6 +22,7 @@
 #include "Misc/Variant.h"
 
 #include "Http.h"
-#include "Json.h"
+#include "Serialization/JsonSerializer.h"
+#include "Misc/ConfigCacheIni.h"
 
 #include "Templates/Atomic.h"

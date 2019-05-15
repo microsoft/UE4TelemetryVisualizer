@@ -22,8 +22,8 @@ typedef std::initializer_list<TPairInitializer<const FString &, const FVariant &
 class GAMETELEMETRY_API ITelemetryProvider
 {
 public:
-	virtual ~ITelemetryProvider() {}
+    virtual ~ITelemetryProvider() {}
 
-	// Adds properties to a telemetry builder
-	virtual void ProvideTelemetry(class FTelemetryBuilder &Builder) = 0;
+    // Adds properties to a telemetry builder
+    virtual void ProvideTelemetry(class FTelemetryBuilder &Builder) = 0;
 };

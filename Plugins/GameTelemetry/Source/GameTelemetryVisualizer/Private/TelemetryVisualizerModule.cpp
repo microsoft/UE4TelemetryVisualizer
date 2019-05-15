@@ -17,11 +17,11 @@ IMPLEMENT_MODULE(FTelemetryVisualizerModule, TelemetryVisualizerModule);
 
 void FTelemetryVisualizerModule::StartupModule()
 {
-	EditorUI = TUniquePtr<FTelemetryVisualizerUI>(new FTelemetryVisualizerUI);
-	EditorUI->Initialize();
+    EditorUI = TUniquePtr<FTelemetryVisualizerUI>(new FTelemetryVisualizerUI);
+    EditorUI->Initialize();
 }
 
 void FTelemetryVisualizerModule::ShutdownModule()
 {
-	EditorUI->Shutdown();
+    EditorUI->Shutdown();
 }

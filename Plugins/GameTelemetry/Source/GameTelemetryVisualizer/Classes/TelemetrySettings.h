@@ -19,57 +19,57 @@
 USTRUCT()
 struct FTelemetryConfigSetting
 {
-	GENERATED_USTRUCT_BODY()
+    GENERATED_USTRUCT_BODY()
 
-	UPROPERTY(EditAnywhere, Category=Telemetry, meta=(ConfigRestartRequired=true))
-	FString QueryUrl;
+    UPROPERTY(EditAnywhere, Category=Telemetry, meta=(ConfigRestartRequired=true))
+    FString QueryUrl;
 
-	UPROPERTY(EditAnywhere, Category=Telemetry, meta=(ConfigRestartRequired=true))
-	FString IngestUrl;
+    UPROPERTY(EditAnywhere, Category=Telemetry, meta=(ConfigRestartRequired=true))
+    FString IngestUrl;
 
-	UPROPERTY(EditAnywhere, Category=Telemetry, meta=(ConfigRestartRequired=true))
-	int32 SendInterval;
+    UPROPERTY(EditAnywhere, Category=Telemetry, meta=(ConfigRestartRequired=true))
+    int32 SendInterval;
 
-	UPROPERTY(EditAnywhere, Category=Telemetry, meta=(ConfigRestartRequired=true))
-	int32 MaxBufferSize;
+    UPROPERTY(EditAnywhere, Category=Telemetry, meta=(ConfigRestartRequired=true))
+    int32 MaxBufferSize;
 
-	UPROPERTY(EditAnywhere, Category = Telemetry, meta = (ConfigRestartRequired = true))
-	int32 QueryTakeLimit;
+    UPROPERTY(EditAnywhere, Category = Telemetry, meta = (ConfigRestartRequired = true))
+    int32 QueryTakeLimit;
 
-	UPROPERTY(EditAnywhere, Category = Telemetry, meta = (ConfigRestartRequired = true))
-	FString AuthenticationKey;
+    UPROPERTY(EditAnywhere, Category = Telemetry, meta = (ConfigRestartRequired = true))
+    FString AuthenticationKey;
 };
 
 UCLASS()
 class UTelemetrySettings
-	: public UAnalyticsSettingsBase
+    : public UAnalyticsSettingsBase
 {
-	GENERATED_UCLASS_BODY()
+    GENERATED_UCLASS_BODY()
 
-	UPROPERTY(EditAnywhere, Category=Telemetry, meta=(ConfigRestartRequired=true))
-	FTelemetryConfigSetting Release;
+    UPROPERTY(EditAnywhere, Category=Telemetry, meta=(ConfigRestartRequired=true))
+    FTelemetryConfigSetting Release;
 
-	UPROPERTY(EditAnywhere, Category=Telemetry, meta=(ConfigRestartRequired=true))
-	FTelemetryConfigSetting Debug;
+    UPROPERTY(EditAnywhere, Category=Telemetry, meta=(ConfigRestartRequired=true))
+    FTelemetryConfigSetting Debug;
 
-	UPROPERTY(EditAnywhere, Category=Telemetry, meta=(ConfigRestartRequired=true))
-	FTelemetryConfigSetting Test;
+    UPROPERTY(EditAnywhere, Category=Telemetry, meta=(ConfigRestartRequired=true))
+    FTelemetryConfigSetting Test;
 
-	UPROPERTY(EditAnywhere, Category=Telemetry, meta=(ConfigRestartRequired=true))
-	FTelemetryConfigSetting Development;
+    UPROPERTY(EditAnywhere, Category=Telemetry, meta=(ConfigRestartRequired=true))
+    FTelemetryConfigSetting Development;
 
 // UTelemetrySettingsBase interface
 protected:
-	/**
-	 * Provides a mechanism to read the section based information into this UObject's properties
-	 */
-	virtual void ReadConfigSettings();
-	/**
-	 * Provides a mechanism to save this object's properties to the section based ini values
-	 */
-	virtual void WriteConfigSettings();
+    /**
+     * Provides a mechanism to read the section based information into this UObject's properties
+     */
+    virtual void ReadConfigSettings();
+    /**
+     * Provides a mechanism to save this object's properties to the section based ini values
+     */
+    virtual void WriteConfigSettings();
 
 private:
-	void ReadConfigStruct(const FString& Section, FTelemetryConfigSetting& Dest, FTelemetryConfigSetting* Default = nullptr);
-	void WriteConfigStruct(const FString& Section, const FTelemetryConfigSetting& Source);
+    void ReadConfigStruct(const FString& Section, FTelemetryConfigSetting& Dest, FTelemetryConfigSetting* Default = nullptr);
+    void WriteConfigStruct(const FString& Section, const FTelemetryConfigSetting& Source);
 };
