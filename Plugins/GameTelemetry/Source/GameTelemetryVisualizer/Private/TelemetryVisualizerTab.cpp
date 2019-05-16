@@ -988,7 +988,8 @@ FReply FTelemetryVisualizerUI::GenerateHeatmap(SEventEditorContainer* collection
     DestroyActors();
     UWorld* currentTarget = GetLocalWorld();
 
-    if (currentTarget != nullptr && collection != nullptr && *m_subVizSelection != "")
+    if (currentTarget != nullptr && collection != nullptr &&
+		!(*m_subVizSelection == "" && (m_heatmapType == HeatmapType::Value || m_heatmapType == HeatmapType::Value_Bar)))
     {
         if ((first == 0 && first == last) || (first == collection->events.Num() - 1 && first == last))
         {
