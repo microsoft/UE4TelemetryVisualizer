@@ -263,7 +263,6 @@ public:
     virtual FString GetBuildType() const = 0;
     virtual FString GetBuildId() const = 0;
     virtual FString GetPlatform() const = 0;
-    virtual FString GetUserId() const = 0;
     virtual FString GetCategory() const = 0;
 
     virtual uint32 GetSequence() const = 0;
@@ -299,7 +298,6 @@ class FSimpleEvent : public ITelemetryEventData
     const TCHAR *BUILD_TYPE = TEXT("build_type");
     const TCHAR *BUILD_ID = TEXT("build_id");
     const TCHAR *PLATFORM = TEXT("platform");
-    const TCHAR *USER_ID = TEXT("user_id");
     const TCHAR *CATEGORY = TEXT("cat");
 
     TMap<FString, TSharedPtr<FJsonValue>> Attributes;
@@ -314,7 +312,6 @@ public:
     FString GetBuildType() const override { return GetString(BUILD_TYPE); }
     FString GetBuildId() const override { return GetString(BUILD_ID); }
     FString GetPlatform() const override { return GetString(PLATFORM); }
-    FString GetUserId() const override { return GetString(USER_ID); }
     FString GetCategory() const override { return GetString(CATEGORY); }
 
     uint32 GetSequence() const override { return (uint32)GetNumber(SEQUENCE); }

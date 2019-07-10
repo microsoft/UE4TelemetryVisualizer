@@ -69,10 +69,6 @@ public:
     UPROPERTY(VisibleAnywhere, Category = "TelemetryEvent", Meta = (ToolTip = "Session ID"))
     FString session;
 
-    //User ID of the event
-    UPROPERTY(VisibleAnywhere, Category = "TelemetryEvent", Meta = (ToolTip = "User"))
-    FString user;
-
     //Build string of the event
     UPROPERTY(VisibleAnywhere, Category = "TelemetryEvent", Meta = (ToolTip = "Build"))
     FString build;

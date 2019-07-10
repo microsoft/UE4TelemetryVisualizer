@@ -157,7 +157,6 @@ void ATelemetryEvent::SetEvent(const TSharedPtr<STelemetryEvent> inPointer)
     location = inPointer->point;
     session = inPointer->session;
     orientation = inPointer->orientation;
-    user = inPointer->user;
     build = inPointer->build;
     name = inPointer->eventname;
     category = inPointer->category;
