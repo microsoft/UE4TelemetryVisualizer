@@ -110,10 +110,6 @@ public:
     // Typically set in the Common Properties
     FORCEINLINE static FTelemetryProperty ClientId(const FString &Value) { return FTelemetryProperty(TEXT("client_id"), Value); }
 
-    // Unique user id for the user playing the game
-    // Typically set in the Common Properties
-    FORCEINLINE static FTelemetryProperty UserId(const FString &Value) { return FTelemetryProperty(TEXT("user_id"), Value); }
-
     // Unique session id for the current play session
     FORCEINLINE static FTelemetryProperty SessionId(const FString &Value) { return FTelemetryProperty(TEXT("session_id"), Value); }
 

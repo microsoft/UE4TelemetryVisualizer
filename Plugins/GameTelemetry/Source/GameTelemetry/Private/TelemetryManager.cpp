@@ -252,15 +252,6 @@ FTelemetryConfiguration FTelemetryManager::GetConfigFromIni()
     return Config;
 }
 
-// Set a new client id - Usually set to the platform client id
-// If setting this again after initialization, consider flushing existing buffered telemetry or they may be incorrectly associated with the new id
-
-
-// Set a new session id - Usually set when the game would like to differentiate between play sessions (such as changing users)
-// If setting this more than once, consider flushing existing buffered telemetry or they may be incorrectly associated with the new id
-
-
-
 void FTelemetryManager::Initialize(const FTelemetryConfiguration & Config)
 {
     if (hasInit)
@@ -287,9 +278,6 @@ void FTelemetryManager::Initialize(const FTelemetryConfiguration & Config)
 
     //Process ID
     Instance->CommonProperties.SetProperty(L"process_id", FGenericPlatformProcess::GetCurrentProcessId());
-
-    //User ID
-    Instance->CommonProperties.SetProperty(L"user_id", FApp::GetSessionOwner());
 
     TelemetryWorker = MakeUnique<FTelemetryWorker>(Config.IngestionUrl, Config.SendInterval, Config.PendingBufferSize);
     hasInit = true;

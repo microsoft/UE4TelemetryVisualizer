@@ -79,7 +79,6 @@ Example:
     + Session ID
     + Build ID
     + Process ID
-    + User ID
     + Sequence ID
 
 4.	Use FTelemetryBuilder to assign properties to your event

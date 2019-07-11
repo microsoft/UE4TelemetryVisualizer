@@ -35,7 +35,6 @@ static const TArray<FColor> DefaultColors =
 //Primary container for events managed by the UI
 struct STelemetryEvent
 {
-    TCHAR user[128];
     TCHAR build[128];
     TCHAR eventname[128];
     TCHAR category[128];
@@ -45,15 +44,14 @@ struct STelemetryEvent
     FDateTime time;
     TMap<FString, TSharedPtr<FJsonValue>> values;
 
-    STelemetryEvent() : eventname(TEXT("\0")), category(TEXT("\0")), session(TEXT("\0")), user(TEXT("\0")), build(TEXT("\0")), point(FVector::ZeroVector), orientation(FVector::ZeroVector), time(0) {};
-    STelemetryEvent(FString inName, FString inCategory, FString inSession, FString inBuild, FString inUser, FVector point, FVector orientation, FDateTime time)
+    STelemetryEvent() : eventname(TEXT("\0")), category(TEXT("\0")), session(TEXT("\0")), build(TEXT("\0")), point(FVector::ZeroVector), orientation(FVector::ZeroVector), time(0) {};
+    STelemetryEvent(FString inName, FString inCategory, FString inSession, FString inBuild, FVector point, FVector orientation, FDateTime time)
         : point(point), orientation(orientation), time(time)
     {
         SetName(inName);
         SetCategory(inCategory);
         SetSession(inSession);
         SetBuild(inBuild);
-        SetUser(inUser);
     };
 
     void SetName(FString inName)
@@ -93,19 +91,6 @@ struct STelemetryEvent
     FString GetBuild()
     {
         return FString(build);
-    }
-
-    void SetUser(FString inUser)
-    {
-        if (inUser.Len() < 128)
-        {
-            FCString::Strcpy(user, *inUser);
-        }
-    }
-
-    FString GetUser()
-    {
-        return FString(user);
     }
 
     void SetSession(FString inSession)
@@ -179,7 +164,6 @@ public:
             newEvent.GetCategory(),
             newEvent.GetSessionId(),
             newEvent.GetBuildType() + L" " + newEvent.GetBuildId() + L" " + newEvent.GetPlatform(),
-            newEvent.GetUserId(),
             newEvent.GetPlayerPosition(),
             newEvent.GetPlayerDirection(),
             newEvent.GetTime())));
@@ -451,8 +435,7 @@ static const TArray<FString> QueryFieldStrings =
     "Client ID",
     "Platform",
     "Process ID",
-    "Session ID",
-    "User ID"
+    "Session ID"
 };
 
 static const TArray<FString> QueryExpectedStrings =
@@ -463,8 +446,7 @@ static const TArray<FString> QueryExpectedStrings =
     "client_id",
     "platform",
     "process_id",
-    "session_id",
-    "user_id"
+    "session_id"
 };
 
 static enum QueryField
@@ -475,8 +457,7 @@ static enum QueryField
     Client_ID,
     Platform,
     Process_ID,
-    Session_ID,
-    User_ID
+    Session_ID
 };
 
 static const TArray<FString> QueryOperatorStrings =
