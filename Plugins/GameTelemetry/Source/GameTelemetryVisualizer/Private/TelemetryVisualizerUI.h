@@ -84,6 +84,7 @@ public:
     void OnFieldSelectionChanged(TSharedPtr<FString> NewValue, ESelectInfo::Type, int index);
     FText GetOperatorItem(int index) const;
     void OnOperatorSelectionChanged(TSharedPtr<FString> NewValue, ESelectInfo::Type, int index);
+    void UpdateFieldValue(const FText& text, int index);
     void UpdateClauseValue(const FText& text, int index);
     FReply AddClause(int index);
     FReply RemoveClause(int index);
@@ -174,6 +175,7 @@ public:
 
     //Window elements
     TSharedPtr<SEditableTextBox> m_searchText;
+    TArray<TSharedPtr<SEditableTextBox>> m_fieldText;
     TArray<TSharedPtr<SEditableTextBox>> m_valueText;
     TSharedPtr<SEditableTextBox> m_heatmapSizeText;
     TSharedPtr<SEditableTextBox> m_heatmapMinValueText;

@@ -216,83 +216,7 @@ void FTelemetryVisualizerUI::GenerateQueryScrollBox()
     }
     m_queryScrollBox->ClearChildren();
 
-    m_queryScrollBox->AddSlot()
-        .HAlign(HAlign_Fill)
-        .VAlign(VAlign_Fill)
-    [
-        SNew(SHorizontalBox)
-        + SHorizontalBox::Slot()
-            .AutoWidth()
-            .Padding(2.f, 0.f, 0.f, 0.f)
-            .VAlign(VAlign_Center)
-        [
-            // +
-            SNew(SButton)
-                .OnClicked_Raw(this, &FTelemetryVisualizerUI::AddClause, 0)
-                .ButtonStyle(FEditorStyle::Get(), "HoverHintOnly")
-            [
-                SNew(SBox)
-                    .WidthOverride(MultiBoxConstants::MenuIconSize)
-                    .HeightOverride(MultiBoxConstants::MenuIconSize)
-                [
-                    SNew(SImage)
-                        .Image(FSlateIcon(FEditorStyle::GetStyleSetName(), "WorldBrowser.AddLayer").GetIcon())
-                ]
-            ]
-        ]
-        + SHorizontalBox::Slot()
-            .AutoWidth()
-            .Padding(54.f, 0.f, 0.f, 0.f)
-            .VAlign(VAlign_Center)
-        [
-            //FIELD
-            SNew(SBox)
-                .WidthOverride(90)
-            [
-                SNew(SComboBox<TSharedPtr<FString>>)
-                    .OptionsSource(&m_queryFieldList)
-                    .OnSelectionChanged_Raw(this, &FTelemetryVisualizerUI::OnFieldSelectionChanged, 0)
-                    .OnGenerateWidget_Raw(this, &FTelemetryVisualizerUI::MakeWidgetForOption)
-                    .InitiallySelectedItem(m_queryFieldList[m_queryCollection[0].Field])
-                [
-                    SNew(STextBlock)
-                        .Text_Raw(this, &FTelemetryVisualizerUI::GetFieldItem, 0)
-                ]
-            ]
-        ]
-        + SHorizontalBox::Slot()
-            .AutoWidth()
-            .Padding(2.f, 0.f, 0.f, 0.f)
-            .VAlign(VAlign_Center)
-        [
-            //OPERATOR
-            SNew(SBox)
-                .WidthOverride(40)
-            [
-                SNew(SComboBox<TSharedPtr<FString>>)
-                    .OptionsSource(&m_queryOperatorList)
-                    .OnSelectionChanged_Raw(this, &FTelemetryVisualizerUI::OnOperatorSelectionChanged, 0)
-                    .OnGenerateWidget_Raw(this, &FTelemetryVisualizerUI::MakeWidgetForOption)
-                    .InitiallySelectedItem(m_queryOperatorList[m_queryCollection[0].Operator])
-                [
-                    SNew(STextBlock)
-                        .Text_Raw(this, &FTelemetryVisualizerUI::GetOperatorItem, 0)
-                ]
-            ]
-        ]
-        + SHorizontalBox::Slot()
-            .HAlign(HAlign_Fill)
-            .Padding(2.f, 0.f, 26.f, 0.f)
-            .VAlign(VAlign_Center)
-        [
-            //VALUE
-            SAssignNew(m_valueText[0], SEditableTextBox)
-                .OnTextChanged_Raw(this, &FTelemetryVisualizerUI::UpdateClauseValue, 0)
-                .Text(FText::FromString(m_queryCollection[0].Value))
-        ]
-    ];
-
-    for (int i = 1; i < m_queryCollection.Num(); i++)
+    if (m_queryCollection[0].Field == QueryField::Other)
     {
         m_queryScrollBox->AddSlot()
             .HAlign(HAlign_Fill)
@@ -306,7 +230,98 @@ void FTelemetryVisualizerUI::GenerateQueryScrollBox()
             [
                 // +
                 SNew(SButton)
-                    .OnClicked_Raw(this, &FTelemetryVisualizerUI::AddClause, i)
+                    .OnClicked_Raw(this, &FTelemetryVisualizerUI::AddClause, 0)
+                    .ButtonStyle(FEditorStyle::Get(), "HoverHintOnly")
+                [
+                    SNew(SBox)
+                        .WidthOverride(MultiBoxConstants::MenuIconSize)
+                        .HeightOverride(MultiBoxConstants::MenuIconSize)
+                    [
+                        SNew(SImage)
+                        .Image(FSlateIcon(FEditorStyle::GetStyleSetName(), "WorldBrowser.AddLayer").GetIcon())
+                    ]
+                ]
+            ]
+            + SHorizontalBox::Slot()
+                .AutoWidth()
+                .Padding(54.f, 0.f, 0.f, 0.f)
+                .VAlign(VAlign_Center)
+            [
+                //FIELD
+                SNew(SBox)
+                    .WidthOverride(90)
+                [
+                    SAssignNew(m_fieldText[0], SEditableTextBox)
+                        .OnTextChanged_Raw(this, &FTelemetryVisualizerUI::UpdateFieldValue, 0)
+                        .Text(FText::FromString(m_queryCollection[0].OtherField))
+                ]
+            ]
+            + SHorizontalBox::Slot()
+                .AutoWidth()
+                .Padding(2.f, 0.f, 0.f, 0.f)
+                .VAlign(VAlign_Center)
+            [
+                //OPERATOR
+                SNew(SBox)
+                    .WidthOverride(40)
+                [
+                    SNew(SComboBox<TSharedPtr<FString>>)
+                        .OptionsSource(&m_queryOperatorList)
+                        .OnSelectionChanged_Raw(this, &FTelemetryVisualizerUI::OnOperatorSelectionChanged, 0)
+                        .OnGenerateWidget_Raw(this, &FTelemetryVisualizerUI::MakeWidgetForOption)
+                        .InitiallySelectedItem(m_queryOperatorList[m_queryCollection[0].Operator])
+                    [
+                        SNew(STextBlock)
+                            .Text_Raw(this, &FTelemetryVisualizerUI::GetOperatorItem, 0)
+                    ]
+                ]
+            ]
+            + SHorizontalBox::Slot()
+                .HAlign(HAlign_Fill)
+                .Padding(2.f, 0.f, 0.f, 0.f)
+                .VAlign(VAlign_Center)
+            [
+                //VALUE
+                SAssignNew(m_valueText[0], SEditableTextBox)
+                    .OnTextChanged_Raw(this, &FTelemetryVisualizerUI::UpdateClauseValue, 0)
+                    .Text(FText::FromString(m_queryCollection[0].Value))
+            ]
+            + SHorizontalBox::Slot()
+                .AutoWidth()
+                .Padding(2.f, 0.f, 0.f, 0.f)
+                .VAlign(VAlign_Center)
+            [
+                // X
+                SNew(SButton)
+                    .OnClicked_Raw(this, &FTelemetryVisualizerUI::RemoveClause, 0)
+                    .ButtonStyle(FEditorStyle::Get(), "HoverHintOnly")
+                [
+                    SNew(SBox)
+                        .WidthOverride(MultiBoxConstants::MenuIconSize)
+                        .HeightOverride(MultiBoxConstants::MenuIconSize)
+                    [
+                        SNew(SImage)
+                            .Image(FSlateIcon(FEditorStyle::GetStyleSetName(), "Symbols.X").GetIcon())
+                    ]
+                ]
+            ]
+        ];
+    }
+    else
+    {
+        m_queryScrollBox->AddSlot()
+            .HAlign(HAlign_Fill)
+            .VAlign(VAlign_Fill)
+        [
+            SNew(SHorizontalBox)
+            + SHorizontalBox::Slot()
+                .AutoWidth()
+                .Padding(2.f, 0.f, 0.f, 0.f)
+                .VAlign(VAlign_Center)
+            [
+                // +
+                SNew(SButton)
+                    .OnClicked_Raw(this, &FTelemetryVisualizerUI::AddClause, 0)
                     .ButtonStyle(FEditorStyle::Get(), "HoverHintOnly")
                 [
                     SNew(SBox)
@@ -320,27 +335,7 @@ void FTelemetryVisualizerUI::GenerateQueryScrollBox()
             ]
             + SHorizontalBox::Slot()
                 .AutoWidth()
-                .Padding(2.f, 0.f, 0.f, 0.f)
-                .VAlign(VAlign_Center)
-            [
-                //AND / OR
-                SNew(SBox)
-                    .WidthOverride(50)
-                [
-                    SNew(SComboBox<TSharedPtr<FString>>)
-                        .OptionsSource(&m_queryAndOrList)
-                        .OnSelectionChanged_Raw(this, &FTelemetryVisualizerUI::OnAndOrSelectionChanged, i)
-                        .OnGenerateWidget_Raw(this, &FTelemetryVisualizerUI::MakeWidgetForOption)
-                        .InitiallySelectedItem(m_queryAndOrList[m_queryCollection[i].isAnd])
-                    [
-                        SNew(STextBlock)
-                            .Text_Raw(this, &FTelemetryVisualizerUI::GetAndOrItem, i)
-                    ]
-                ]
-            ]
-            + SHorizontalBox::Slot()
-                .AutoWidth()
-                .Padding(2.f, 0.f, 0.f, 0.f)
+                .Padding(54.f, 0.f, 0.f, 0.f)
                 .VAlign(VAlign_Center)
             [
                 //FIELD
@@ -349,12 +344,12 @@ void FTelemetryVisualizerUI::GenerateQueryScrollBox()
                 [
                     SNew(SComboBox<TSharedPtr<FString>>)
                         .OptionsSource(&m_queryFieldList)
-                        .OnSelectionChanged_Raw(this, &FTelemetryVisualizerUI::OnFieldSelectionChanged, i)
+                        .OnSelectionChanged_Raw(this, &FTelemetryVisualizerUI::OnFieldSelectionChanged, 0)
                         .OnGenerateWidget_Raw(this, &FTelemetryVisualizerUI::MakeWidgetForOption)
-                        .InitiallySelectedItem(m_queryFieldList[m_queryCollection[i].Field])
+                        .InitiallySelectedItem(m_queryFieldList[m_queryCollection[0].Field])
                     [
                         SNew(STextBlock)
-                            .Text_Raw(this, &FTelemetryVisualizerUI::GetFieldItem, i)
+                            .Text_Raw(this, &FTelemetryVisualizerUI::GetFieldItem, 0)
                     ]
                 ]
             ]
@@ -369,45 +364,258 @@ void FTelemetryVisualizerUI::GenerateQueryScrollBox()
                 [
                     SNew(SComboBox<TSharedPtr<FString>>)
                         .OptionsSource(&m_queryOperatorList)
-                        .OnSelectionChanged_Raw(this, &FTelemetryVisualizerUI::OnOperatorSelectionChanged, i)
+                        .OnSelectionChanged_Raw(this, &FTelemetryVisualizerUI::OnOperatorSelectionChanged, 0)
                         .OnGenerateWidget_Raw(this, &FTelemetryVisualizerUI::MakeWidgetForOption)
-                        .InitiallySelectedItem(m_queryOperatorList[m_queryCollection[i].Operator])
+                        .InitiallySelectedItem(m_queryOperatorList[m_queryCollection[0].Operator])
                     [
                         SNew(STextBlock)
-                            .Text_Raw(this, &FTelemetryVisualizerUI::GetOperatorItem, i)
+                            .Text_Raw(this, &FTelemetryVisualizerUI::GetOperatorItem, 0)
                     ]
                 ]
             ]
             + SHorizontalBox::Slot()
                 .HAlign(HAlign_Fill)
-                .Padding(2.f, 0.f, 0.f, 0.f)
+                .Padding(2.f, 0.f, 26.f, 0.f)
                 .VAlign(VAlign_Center)
             [
                 //VALUE
-                SAssignNew(m_valueText[i], SEditableTextBox)
-                    .OnTextChanged_Raw(this, &FTelemetryVisualizerUI::UpdateClauseValue, i)
-                    .Text(FText::FromString(m_queryCollection[i].Value))
-            ]
-            + SHorizontalBox::Slot()
-                .AutoWidth()
-                .Padding(2.f, 0.f, 0.f, 0.f)
-                .VAlign(VAlign_Center)
-            [
-                // X
-                SNew(SButton)
-                    .OnClicked_Raw(this, &FTelemetryVisualizerUI::RemoveClause, i)
-                    .ButtonStyle(FEditorStyle::Get(), "HoverHintOnly")
-                [
-                    SNew(SBox)
-                        .WidthOverride(MultiBoxConstants::MenuIconSize)
-                        .HeightOverride(MultiBoxConstants::MenuIconSize)
-                    [
-                        SNew(SImage)
-                            .Image(FSlateIcon(FEditorStyle::GetStyleSetName(), "Symbols.X").GetIcon())
-                    ]
-                ]
+                SAssignNew(m_valueText[0], SEditableTextBox)
+                    .OnTextChanged_Raw(this, &FTelemetryVisualizerUI::UpdateClauseValue, 0)
+                    .Text(FText::FromString(m_queryCollection[0].Value))
             ]
         ];
+    }
+    
+    for (int i = 1; i < m_queryCollection.Num(); i++)
+    {
+        if (m_queryCollection[i].Field == QueryField::Other)
+        {
+            m_queryScrollBox->AddSlot()
+                .HAlign(HAlign_Fill)
+                .VAlign(VAlign_Fill)
+            [
+                SNew(SHorizontalBox)
+                + SHorizontalBox::Slot()
+                    .AutoWidth()
+                    .Padding(2.f, 0.f, 0.f, 0.f)
+                    .VAlign(VAlign_Center)
+                [
+                    // +
+                    SNew(SButton)
+                        .OnClicked_Raw(this, &FTelemetryVisualizerUI::AddClause, i)
+                        .ButtonStyle(FEditorStyle::Get(), "HoverHintOnly")
+                    [
+                        SNew(SBox)
+                            .WidthOverride(MultiBoxConstants::MenuIconSize)
+                            .HeightOverride(MultiBoxConstants::MenuIconSize)
+                        [
+                            SNew(SImage)
+                                .Image(FSlateIcon(FEditorStyle::GetStyleSetName(), "WorldBrowser.AddLayer").GetIcon())
+                        ]
+                    ]
+                ]
+                + SHorizontalBox::Slot()
+                    .AutoWidth()
+                    .Padding(2.f, 0.f, 0.f, 0.f)
+                    .VAlign(VAlign_Center)
+                [
+                    //AND / OR
+                    SNew(SBox)
+                        .WidthOverride(50)
+                    [
+                        SNew(SComboBox<TSharedPtr<FString>>)
+                            .OptionsSource(&m_queryAndOrList)
+                            .OnSelectionChanged_Raw(this, &FTelemetryVisualizerUI::OnAndOrSelectionChanged, i)
+                            .OnGenerateWidget_Raw(this, &FTelemetryVisualizerUI::MakeWidgetForOption)
+                            .InitiallySelectedItem(m_queryAndOrList[m_queryCollection[i].isAnd])
+                        [
+                            SNew(STextBlock)
+                                .Text_Raw(this, &FTelemetryVisualizerUI::GetAndOrItem, i)
+                        ]
+                    ]
+                ]
+                + SHorizontalBox::Slot()
+                    .AutoWidth()
+                    .Padding(2.f, 0.f, 0.f, 0.f)
+                    .VAlign(VAlign_Center)
+                [
+                    //FIELD
+                    SNew(SBox)
+                        .WidthOverride(90)
+                    [
+                        SAssignNew(m_fieldText[0], SEditableTextBox)
+                            .OnTextChanged_Raw(this, &FTelemetryVisualizerUI::UpdateFieldValue, 0)
+                            .Text(FText::FromString(m_queryCollection[0].OtherField))
+                    ]
+                ]
+                + SHorizontalBox::Slot()
+                    .AutoWidth()
+                    .Padding(2.f, 0.f, 0.f, 0.f)
+                    .VAlign(VAlign_Center)
+                [
+                    //OPERATOR
+                    SNew(SBox)
+                        .WidthOverride(40)
+                    [
+                        SNew(SComboBox<TSharedPtr<FString>>)
+                            .OptionsSource(&m_queryOperatorList)
+                            .OnSelectionChanged_Raw(this, &FTelemetryVisualizerUI::OnOperatorSelectionChanged, i)
+                            .OnGenerateWidget_Raw(this, &FTelemetryVisualizerUI::MakeWidgetForOption)
+                            .InitiallySelectedItem(m_queryOperatorList[m_queryCollection[i].Operator])
+                        [
+                            SNew(STextBlock)
+                                .Text_Raw(this, &FTelemetryVisualizerUI::GetOperatorItem, i)
+                        ]
+                    ]
+                ]
+                + SHorizontalBox::Slot()
+                    .HAlign(HAlign_Fill)
+                    .Padding(2.f, 0.f, 0.f, 0.f)
+                    .VAlign(VAlign_Center)
+                [
+                    //VALUE
+                    SAssignNew(m_valueText[i], SEditableTextBox)
+                        .OnTextChanged_Raw(this, &FTelemetryVisualizerUI::UpdateClauseValue, i)
+                        .Text(FText::FromString(m_queryCollection[i].Value))
+                ]
+                + SHorizontalBox::Slot()
+                    .AutoWidth()
+                    .Padding(2.f, 0.f, 0.f, 0.f)
+                    .VAlign(VAlign_Center)
+                [
+                    // X
+                    SNew(SButton)
+                        .OnClicked_Raw(this, &FTelemetryVisualizerUI::RemoveClause, i)
+                        .ButtonStyle(FEditorStyle::Get(), "HoverHintOnly")
+                    [
+                        SNew(SBox)
+                            .WidthOverride(MultiBoxConstants::MenuIconSize)
+                            .HeightOverride(MultiBoxConstants::MenuIconSize)
+                        [
+                            SNew(SImage)
+                                .Image(FSlateIcon(FEditorStyle::GetStyleSetName(), "Symbols.X").GetIcon())
+                        ]
+                    ]
+                ]
+            ];
+        }
+        else
+        {
+            m_queryScrollBox->AddSlot()
+                .HAlign(HAlign_Fill)
+                .VAlign(VAlign_Fill)
+            [
+                SNew(SHorizontalBox)
+                + SHorizontalBox::Slot()
+                    .AutoWidth()
+                    .Padding(2.f, 0.f, 0.f, 0.f)
+                    .VAlign(VAlign_Center)
+                [
+                    // +
+                    SNew(SButton)
+                        .OnClicked_Raw(this, &FTelemetryVisualizerUI::AddClause, i)
+                        .ButtonStyle(FEditorStyle::Get(), "HoverHintOnly")
+                    [
+                        SNew(SBox)
+                            .WidthOverride(MultiBoxConstants::MenuIconSize)
+                            .HeightOverride(MultiBoxConstants::MenuIconSize)
+                        [
+                            SNew(SImage)
+                                .Image(FSlateIcon(FEditorStyle::GetStyleSetName(), "WorldBrowser.AddLayer").GetIcon())
+                        ]
+                    ]
+                ]
+                + SHorizontalBox::Slot()
+                    .AutoWidth()
+                    .Padding(2.f, 0.f, 0.f, 0.f)
+                    .VAlign(VAlign_Center)
+                [
+                    //AND / OR
+                    SNew(SBox)
+                        .WidthOverride(50)
+                    [
+                        SNew(SComboBox<TSharedPtr<FString>>)
+                            .OptionsSource(&m_queryAndOrList)
+                            .OnSelectionChanged_Raw(this, &FTelemetryVisualizerUI::OnAndOrSelectionChanged, i)
+                            .OnGenerateWidget_Raw(this, &FTelemetryVisualizerUI::MakeWidgetForOption)
+                            .InitiallySelectedItem(m_queryAndOrList[m_queryCollection[i].isAnd])
+                        [
+                            SNew(STextBlock)
+                                .Text_Raw(this, &FTelemetryVisualizerUI::GetAndOrItem, i)
+                        ]
+                    ]
+                ]
+                + SHorizontalBox::Slot()
+                    .AutoWidth()
+                    .Padding(2.f, 0.f, 0.f, 0.f)
+                    .VAlign(VAlign_Center)
+                [
+                    //FIELD
+                    SNew(SBox)
+                        .WidthOverride(90)
+                    [
+                        SNew(SComboBox<TSharedPtr<FString>>)
+                            .OptionsSource(&m_queryFieldList)
+                            .OnSelectionChanged_Raw(this, &FTelemetryVisualizerUI::OnFieldSelectionChanged, i)
+                            .OnGenerateWidget_Raw(this, &FTelemetryVisualizerUI::MakeWidgetForOption)
+                            .InitiallySelectedItem(m_queryFieldList[m_queryCollection[i].Field])
+                        [
+                            SNew(STextBlock)
+                                .Text_Raw(this, &FTelemetryVisualizerUI::GetFieldItem, i)
+                        ]
+                    ]
+                ]
+                + SHorizontalBox::Slot()
+                    .AutoWidth()
+                    .Padding(2.f, 0.f, 0.f, 0.f)
+                    .VAlign(VAlign_Center)
+                [
+                    //OPERATOR
+                    SNew(SBox)
+                        .WidthOverride(40)
+                    [
+                        SNew(SComboBox<TSharedPtr<FString>>)
+                            .OptionsSource(&m_queryOperatorList)
+                            .OnSelectionChanged_Raw(this, &FTelemetryVisualizerUI::OnOperatorSelectionChanged, i)
+                            .OnGenerateWidget_Raw(this, &FTelemetryVisualizerUI::MakeWidgetForOption)
+                            .InitiallySelectedItem(m_queryOperatorList[m_queryCollection[i].Operator])
+                        [
+                            SNew(STextBlock)
+                                .Text_Raw(this, &FTelemetryVisualizerUI::GetOperatorItem, i)
+                        ]
+                    ]
+                ]
+                + SHorizontalBox::Slot()
+                    .HAlign(HAlign_Fill)
+                    .Padding(2.f, 0.f, 0.f, 0.f)
+                    .VAlign(VAlign_Center)
+                [
+                    //VALUE
+                    SAssignNew(m_valueText[i], SEditableTextBox)
+                        .OnTextChanged_Raw(this, &FTelemetryVisualizerUI::UpdateClauseValue, i)
+                        .Text(FText::FromString(m_queryCollection[i].Value))
+                ]
+                + SHorizontalBox::Slot()
+                    .AutoWidth()
+                    .Padding(2.f, 0.f, 0.f, 0.f)
+                    .VAlign(VAlign_Center)
+                [
+                    // X
+                    SNew(SButton)
+                        .OnClicked_Raw(this, &FTelemetryVisualizerUI::RemoveClause, i)
+                        .ButtonStyle(FEditorStyle::Get(), "HoverHintOnly")
+                    [
+                        SNew(SBox)
+                            .WidthOverride(MultiBoxConstants::MenuIconSize)
+                            .HeightOverride(MultiBoxConstants::MenuIconSize)
+                        [
+                            SNew(SImage)
+                                .Image(FSlateIcon(FEditorStyle::GetStyleSetName(), "Symbols.X").GetIcon())
+                        ]
+                    ]
+                ]
+            ];
+        }
     }
 }
 
@@ -417,11 +625,13 @@ FReply FTelemetryVisualizerUI::AddClause(int index)
     {
         m_queryCollection.Add(SQuerySetting());
         m_valueText.SetNum(m_valueText.Num() + 1);
+        m_fieldText.SetNum(m_fieldText.Num() + 1);
     }
     else
     {
         m_queryCollection.Insert(SQuerySetting(), index);
         m_valueText.InsertDefaulted(index, 1);
+        m_fieldText.InsertDefaulted(index, 1);
     }
 
     GenerateQueryScrollBox();
@@ -433,6 +643,13 @@ FReply FTelemetryVisualizerUI::RemoveClause(int index)
 {
     m_queryCollection.RemoveAt(index);
     m_valueText.RemoveAt(index);
+    m_fieldText.RemoveAt(index);
+    
+    if (m_queryCollection.Num() == 0)
+    {
+        AddClause(0);
+    }
+    
     GenerateQueryScrollBox();
 
     return FReply::Handled();
@@ -477,13 +694,46 @@ FReply FTelemetryVisualizerUI::SubmitQuery()
             break;
         }
 
-        if (m_queryCollection[i].isAnd)
+        TSharedPtr<FJsonValue> finalValue;
+
+        if (m_queryCollection[i].Value.ToLower() == "true")
         {
-            andNodes.Emplace(new FQueryNode(EQueryNodeType::Comparison, QueryExpectedStrings[m_queryCollection[i].Field], op, FJsonValueUtil::Create(m_queryCollection[i].Value)));
+            finalValue = FJsonValueUtil::Create(true);
+        }
+        else if (m_queryCollection[i].Value.ToLower() == "false")
+        {
+            finalValue = FJsonValueUtil::Create(false);
+        }
+        else if (m_queryCollection[i].Value.IsNumeric())
+        {
+            finalValue = FJsonValueUtil::Create(FCString::Atof(*m_queryCollection[i].Value));
         }
         else
         {
-            orNodes.Emplace(new FQueryNode(EQueryNodeType::Comparison, QueryExpectedStrings[m_queryCollection[i].Field], op, FJsonValueUtil::Create(m_queryCollection[i].Value)));
+            finalValue = FJsonValueUtil::Create(m_queryCollection[i].Value);
+        }
+
+        if (m_queryCollection[i].isAnd)
+        {
+            if (m_queryCollection[i].Field == QueryField::Other)
+            {
+                andNodes.Emplace(new FQueryNode(EQueryNodeType::Comparison, m_queryCollection[i].OtherField, op, MoveTemp(finalValue)));
+            }
+            else
+            {
+                andNodes.Emplace(new FQueryNode(EQueryNodeType::Comparison, QueryExpectedStrings[m_queryCollection[i].Field], op, FJsonValueUtil::Create(m_queryCollection[i].Value)));
+            }
+        }
+        else
+        {
+            if (m_queryCollection[i].Field == QueryField::Other)
+            {
+                orNodes.Emplace(new FQueryNode(EQueryNodeType::Comparison, m_queryCollection[i].OtherField, op, MoveTemp(finalValue)));
+            }
+            else
+            {
+                orNodes.Emplace(new FQueryNode(EQueryNodeType::Comparison, QueryExpectedStrings[m_queryCollection[i].Field], op, FJsonValueUtil::Create(m_queryCollection[i].Value)));
+            }
         }
     }
 
@@ -566,6 +816,8 @@ void FTelemetryVisualizerUI::OnFieldSelectionChanged(TSharedPtr<FString> NewValu
         {
             m_queryCollection[index].Field = newType;
         }
+
+        GenerateQueryScrollBox();
     }
 }
 
@@ -593,6 +845,12 @@ void FTelemetryVisualizerUI::OnOperatorSelectionChanged(TSharedPtr<FString> NewV
             m_queryCollection[index].Operator = newType;
         }
     }
+}
+
+void FTelemetryVisualizerUI::UpdateFieldValue(const FText& text, int index)
+{
+    m_queryCollection[index].OtherField = text.ToString();
+    return;
 }
 
 void FTelemetryVisualizerUI::UpdateClauseValue(const FText& text, int index)

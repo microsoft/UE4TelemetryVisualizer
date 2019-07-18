@@ -485,10 +485,11 @@ struct SQuerySetting
 {
     bool isAnd;
     QueryField Field;
+    FString OtherField;
     QueryOperator Operator;
     FString Value;
 
-    SQuerySetting() : isAnd(false), Field(QueryField::Category), Operator(QueryOperator::Equal), Value("")
+    SQuerySetting() : isAnd(false), Field(QueryField::Category), OtherField(""), Operator(QueryOperator::Equal), Value("")
     {
     }
 };
