@@ -435,7 +435,8 @@ static const TArray<FString> QueryFieldStrings =
     "Client ID",
     "Platform",
     "Process ID",
-    "Session ID"
+    "Session ID",
+    "Other"
 };
 
 static const TArray<FString> QueryExpectedStrings =
@@ -457,7 +458,8 @@ static enum QueryField
     Client_ID,
     Platform,
     Process_ID,
-    Session_ID
+    Session_ID,
+    Other
 };
 
 static const TArray<FString> QueryOperatorStrings =
