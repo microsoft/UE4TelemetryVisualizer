@@ -40,7 +40,7 @@ Example:
         
     +	Select **Telemetry** and enter your settings
     
-    ![alt text](\images\project_settings.png)
+    ![](images/project_settings.png)
     
     b.	Or manually:
         
@@ -148,7 +148,7 @@ Once you have data uploaded, you are ready to start visualizing it!
 1. In the UE4 editor, open your project.
 2. Open the **Window** menu and under **Telemetry Settings**, select **Open All**
 
-    ![alt text](\images\window_menu.png)
+    ![](images/window_menu.png)
 
 3. Two tabs will open, **Data Viewer** and **Visualization Tools**.  Note that these can be docked anywhere in the editor or combined within windows.
 
@@ -156,29 +156,29 @@ Once you have data uploaded, you are ready to start visualizing it!
 
 4. First, we will use the **Data Viewer** tab to get our first dataset.  Using the *Event Settings* box, build a query for what general events you would like to recieve.  Once you are ready, press **Submit** and wait for the results.  If the query found events, you will see them populate in the *Event Search* box.
     
-    ![alt text](\images\data_viewer.png)
+    ![](images/data_viewer.png)
 
 5. By default, all data received by the query will be enabled.  In the *Event Search* box, you can uncheck any event groups you do not wish to see and use the search bar above to look for different event names.  In addition, each event group has a changeable color and shape for how each event is drawn.
 6. You should now have events being drawn directly in your game world.  Use the different shapes and colors to customize your view to see the most relivant information.  Also note that using shapes such as the cone will provide orientation detail as well.
     
-    ![alt text](\images\points.png)
+    ![](images/points.png)
 
 7. All of the events are actually interactive elements in the game.  They can be clicked to see further details, zoomed, saved, and more.  In the **World Outliner**, just look for actors under the **TelemetryEvents** folder.
     
-    ![alt text](\images\world_outliner.png)
+    ![](images/world_outliner.png)
 
 ### Visualization Tools
 
 8. Now we will use the **Visualization Tools** tab to get unique views of our data.  In the *Event Type* box, you will noticed a drop down menu.  Expanding that will provide a list of event types, the same from the *Event Search* box on the other tab.  Select one of those event groups.
 
-    ![alt text](\images\viz_tools.png)
+    ![](images/viz_tools.png)
 
 9. You will notice that underneith, a time will now be at the end of our animation bar.  This is the elapsed time of the selected data selected.  Simply press any of the play/rewind buttons or drag the bar to any location in the timeline to see how your data has changed over time.  Points will appear or disappear as if they were happening in realtime.
       
        Note: If there is a gap in time greater than 30 seconds, the animation will skip ahead to keep the visualization more fluid
 10. Now lets look at the *Heatmap Settings* box.  Here, you can select a variety of options to combine your event data in to a 3D map and even watch that collection of data animate over time.
 
-    ![alt text](\images\heatmap.png)
+    ![](images/heatmap.png)
 
 11. Values represents the group of values you would like the heatmap to use.
 12. Type represents the type of heatmap you would like to generate.
